@@ -27,6 +27,9 @@ imagens e dois marcadores próprios:
 
     <!-- capa -->  ...  <!-- /capa -->   bloco centralizado da capa
     <!-- quebra-de-pagina -->            quebra de página
+
+A largura de uma imagem pode ser fixada pelo título do Markdown:
+`![alt](caminho "6cm")`. Sem isso, ocupa a largura útil da página.
 """
 
 from __future__ import annotations
@@ -55,7 +58,10 @@ ENTIDADES = {"&nbsp;": " ", "&amp;": "&", "&lt;": "<", "&gt;": ">",
 INLINE = re.compile(
     r"(\*\*\*.+?\*\*\*|\*\*.+?\*\*|(?<!\*)\*[^*\n]+?\*(?!\*)|`[^`]+?`|\[[^\]]+?\]\([^)]+?\))"
 )
-IMAGEM = re.compile(r"^!\[(?P<alt>[^\]]*)\]\((?P<src>[^)]+)\)\s*$")
+# ![alt](caminho) ou ![alt](caminho "6cm") para fixar a largura
+IMAGEM = re.compile(
+    r'^!\[(?P<alt>[^\]]*)\]\(\s*(?P<src>[^)\s]+)(?:\s+"(?P<larg>[\d.,]+)\s*cm")?\s*\)\s*$'
+)
 
 
 # ------------------------------------------------------------------ runs
@@ -229,7 +235,9 @@ def convert(md_path: Path, docx_path: Path, template: Path = TEMPLATE):
         if m:
             src = (md_path.parent / m.group("src")).resolve()
             if src.exists():
-                doc.add_picture(str(src), width=Cm(util_cm))
+                larg = m.group("larg")
+                cm = float(larg.replace(",", ".")) if larg else util_cm
+                doc.add_picture(str(src), width=Cm(min(cm, util_cm)))
                 doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
             i += 1
             continue

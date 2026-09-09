@@ -12,7 +12,9 @@ o dataset e a hipótese inicial.
 | [`comparacao-versoes.md`](comparacao-versoes.md) | O que mudou em relação à versão do grupo, e por quê. Base para a discussão em equipe. |
 | [`versao-do-grupo-2026-09-08.md`](versao-do-grupo-2026-09-08.md) | **Arquivo histórico.** Transcrição do Google Docs do grupo antes da reescrita. Não editar. |
 | `google-doc-do-grupo.url` | Atalho para o Google Docs compartilhado (intacto, não foi alterado). |
-| `figuras/` | **Geradas** por `tools/gerar_figura_arquitetura.py`. A `.png` é a que se cola no Google Docs. |
+| `figuras/arquitetura-sit.png` | **Gerada** por `tools/gerar_figura_arquitetura.py`. É a Figura 1 do documento vigente. |
+| `figuras/versao-do-grupo/` | **Arquivo histórico.** Figura de arquitetura extraída do Google Docs do grupo. Não é usada no documento vigente. |
+| `../../assets/brasao-ufc.png` | Brasão da UFC da capa, extraído do template do professor. Compartilhado por todas as entregas. |
 
 ## Regerar os artefatos
 

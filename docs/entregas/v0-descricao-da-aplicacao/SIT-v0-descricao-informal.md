@@ -1,4 +1,6 @@
 <!-- capa -->
+![Brasão da UFC](../../assets/brasao-ufc.png "6cm")
+
 **UNIVERSIDADE FEDERAL DO CEARÁ**  
 **DEPARTAMENTO DE ENGENHARIA DE TELEINFORMÁTICA**  
 **ENGENHARIA DE COMPUTAÇÃO**  

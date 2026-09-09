@@ -104,8 +104,14 @@ INTERNET DAS COISAS
 
 A arquitetura do sistema será composta por sensores de umidade do solo e temperatura, um microcontrolador IoT, um circuito de acionamento, uma bomba de água, um broker MQTT e um painel de monitoramento. O microcontrolador realizará a coleta das medições e a decisão local sobre a irrigação. Os dados também serão enviados ao broker MQTT para visualização e registro. O painel poderá enviar comandos manuais ao microcontrolador. Bibliotecas dos sensores, o protocolo MQTT e o broker serão componentes reutilizados, enquanto a lógica de decisão e a integração entre os módulos serão desenvolvidas pela equipe.
 
+![Arquitetura do sistema — versão do grupo](figuras/versao-do-grupo/arquitetura-versao-do-grupo.png)
+
 **Figura 1 – Arquitetura geral do sistema SIT.**
 **Fonte: elaboração própria, com auxílio de ferramenta de inteligência artificial.**
+
+> Figura extraída do Google Docs do grupo e preservada aqui junto com o texto que ela
+> acompanhava. A figura da versão vigente é
+> [`figuras/arquitetura-sit.png`](figuras/arquitetura-sit.png).
 
 ## 6 REFERÊNCIAS OU BIBLIOGRAFIA
 
