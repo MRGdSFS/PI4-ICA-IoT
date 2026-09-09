@@ -1,10 +1,60 @@
-# Ignore all CSV files
+# ---------------------------------------------------------------------------
+# SIT — Sistema IoT de Irrigação Inteligente de Tomate
+# ---------------------------------------------------------------------------
+
+# --- Dados ---------------------------------------------------------------
+# Os .zip originais em data/raw/ SÃO versionados (são a fonte de verdade).
+# Tudo que for derivado deles é reproduzível e fica fora do git.
+data/interim/
+data/processed/
+data/external/
 *.csv
+!data/**/README*.csv
 
-# Ignore Excel files
-*.xlsx
-*.xls
+# --- Modelos treinados ---------------------------------------------------
+models/**/*.pkl
+models/**/*.joblib
+models/**/*.h5
+models/**/*.keras
+models/**/*.onnx
+models/**/*.tflite
 
-# Ignore text files
-*.TXT
-*.md
+# --- Python ---------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Segredos -------------------------------------------------------------
+.env
+.env.*
+!.env.example
+secrets.yaml
+*.pem
+*.key
+credentials.json
+
+# --- Firmware / PlatformIO ------------------------------------------------
+firmware/.pio/
+firmware/.vscode/
+*.elf
+
+# --- Infra local ----------------------------------------------------------
+services/**/data/
+services/**/logs/
+*.log
+*.sqlite
+*.db
+
+# --- SO / editores --------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+~$*

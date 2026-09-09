@@ -1,0 +1,29 @@
+# Normaliza fim de linha em texto, mas NUNCA em binário.
+# Os PDFs corrompidos (2 bytes) no histórico foram causados por conversão de
+# texto em arquivos binários. Este arquivo impede que isso volte a acontecer.
+* text=auto
+
+*.pdf   binary
+*.docx  binary
+*.xlsx  binary
+*.xls   binary
+*.zip   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.bin   binary
+*.h5    binary
+*.tflite binary
+*.url   text eol=crlf
+
+*.py    text eol=lf
+*.md    text eol=lf
+*.ipynb text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.json  text eol=lf
+*.ino   text eol=lf
+*.cpp   text eol=lf
+*.h     text eol=lf
