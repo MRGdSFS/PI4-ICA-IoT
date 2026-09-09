@@ -50,7 +50,12 @@ def add_runs(par, text, *, bold=False, italic=False, size=None, color=None):
             if m:
                 body = m.group(1) if not m.group(2).startswith("http") \
                     else f"{m.group(1)} ({m.group(2)})"
-        run = par.add_run(body)
+        # "\n" no corpo = quebra de linha forçada (dois espaços no fim da linha .md)
+        segments = body.split("\n")
+        run = par.add_run(segments[0])
+        for seg in segments[1:]:
+            run.add_break()
+            run.add_text(seg)
         run.bold, run.italic = b, i
         if mono:
             run.font.name = "Consolas"
@@ -235,17 +240,26 @@ def convert(md_path: Path, docx_path: Path):
             add_runs(p, " ".join(buf))
             continue
 
-        # ---- parágrafo (junta linhas quebradas manualmente)
-        buf = [stripped]
+        # ---- parágrafo
+        # Linhas consecutivas viram um só parágrafo (as quebras do .md existem só
+        # para o diff do git). Duas ou mais espaços no fim da linha forçam quebra,
+        # como no Markdown padrão.
+        raw = [line]
         i += 1
         while i < n and lines[i].strip() and \
                 not re.match(r"^\s*(#|\||>|```|[-*+]\s|\d+\.\s|!\[)", lines[i]) and \
                 not re.fullmatch(r"-{3,}", lines[i].strip()):
-            buf.append(lines[i].strip())
+            raw.append(lines[i])
             i += 1
+        text = ""
+        for k, ln in enumerate(raw):
+            text += ln.strip()
+            if k < len(raw) - 1:
+                text += "\n" if ln.endswith("  ") else " "
+        forced = "\n" in text
         p = doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-        add_runs(p, " ".join(buf))
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT if forced else WD_ALIGN_PARAGRAPH.JUSTIFY
+        add_runs(p, text)
 
     doc.save(docx_path)
     return docx_path

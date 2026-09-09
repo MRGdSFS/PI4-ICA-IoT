@@ -23,7 +23,6 @@ python tools/md2docx.py docs/entregas/v0-descricao-da-aplicacao/SIT-v0-descricao
 
 ## Pendências antes de entregar
 
-- [ ] Confirmar com a equipe as frentes atribuídas a cada integrante (tabela da capa).
 - [ ] Completar os dados bibliográficos das referências 3 a 8 e 10.
 - [ ] Decidir entre sensor de vazão YF-S401 e bomba peristáltica calibrada (RF04).
 - [ ] Colar o conteúdo no Google Docs do grupo (ou anexar o `.docx`), conforme combinado.

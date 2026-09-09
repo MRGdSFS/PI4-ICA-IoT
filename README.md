@@ -245,13 +245,9 @@ manutenção da umidade em faixa adequada.
 
 ## Equipe
 
-| Integrante | Frente que conduz |
-| :-- | :-- |
-| Alisson Jaime Sales Barros | Gerência do projeto, arquitetura e integração |
-| Gabriel Vaz de Oliveira | Hardware e firmware (nó ESP32) |
-| José Ferreira Lessa | Comunicação, infraestrutura de dados e painel |
-| Matheus Rocha Gomes da Silva | Inteligência computacional (dados, modelo, validação) |
+Alisson Jaime Sales Barros · Gabriel Vaz de Oliveira · José Ferreira Lessa ·
+Matheus Rocha Gomes da Silva
 
-As frentes indicam quem **conduz** cada área, não exclusividade. Conforme a disciplina
-exige, todos participam das decisões de arquitetura, modelo, hardware e *trade-offs*, e
-todos devem entender o sistema completo.
+O projeto é conduzido de forma integrada. Conforme a disciplina exige, as decisões de
+arquitetura, modelo, hardware e *trade-offs* são tomadas em conjunto, e todos os
+integrantes acompanham o sistema completo.

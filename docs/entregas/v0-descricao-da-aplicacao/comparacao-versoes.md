@@ -32,7 +32,7 @@ que estava no repositório com 2 bytes) foi recuperado, e ele muda o enquadramen
 | # | Versão do grupo | Problema | Versão vigente |
 | :-: | :-- | :-- | :-- |
 | 1 | Título "SIT - Sistema \IoT de Irrigação Inteligente de Tomates" | Erro de digitação (`\IoT`) no título do documento | "SIT — Sistema IoT de Irrigação Inteligente para Cultivo de Tomate" |
-| 2 | Integrantes listados sem cargo | O template do professor pede "Nomes dos Integrantes **e Cargos**" | Tabela de integrante × frente conduzida, com nota de que as frentes não são exclusivas |
+| 2 | Integrantes listados soltos, sem contexto | O template pede "Nomes dos Integrantes e Cargos", mas dividir áreas fixas contraria o que a disciplina exige (*"everyone understands the complete system"*) | "Equipe de desenvolvimento", com nota de que as decisões são tomadas em conjunto e todos acompanham o sistema completo — sem repartir o projeto em silos |
 | 3 | Glossário com 3 termos (IoT, MQTT, Broker) | Não cobre nenhum termo agronômico nem de IC — e o documento inteiro depende deles | 17 termos, incluindo IC, QoS, Edge, sensor virtual, VWC, capacidade de campo, PMP, AFD, ETc, GDD, TinyML, baseline |
 | 4 | Introdução: "estratégias fixas podem não considerar as condições reais" | Descreve o problema, mas não diz **por que precisa de IC**. Um limiar fixo já resolveria o que está escrito | Distingue automação **reativa** (limiar) de decisão **preditiva**, e mostra por que a segunda exige um modelo. Acrescenta a sensibilidade específica do tomateiro (podridão apical, rachadura) |
 | 5 | Não declarava a pergunta de pesquisa | As slides formulam a pergunta explicitamente; deixá-la de fora perde alinhamento | Pergunta de engenharia em destaque, na formulação da disciplina |
@@ -74,9 +74,7 @@ Nem tudo mudou, e o que estava bom continua:
 
 ## Pontos que a equipe precisa fechar
 
-1. **Confirmar as frentes de cada integrante** (tabela da capa) — foram propostas, não
-   acordadas.
-2. **Conferir as referências 3 a 8 e 10**, que estão sem dados bibliográficos completos.
-3. **Decidir entre sensor de vazão YF-S401 e bomba peristáltica calibrada** para medir o
+1. **Conferir as referências 3 a 8 e 10**, que estão sem dados bibliográficos completos.
+2. **Decidir entre sensor de vazão YF-S401 e bomba peristáltica calibrada** para medir o
    volume — as duas atendem ao RF04, com custos e precisões diferentes.
-4. **Rebaixar os dois PDFs corrompidos** listados em [`../../README.md`](../../README.md).
+3. **Rebaixar os dois PDFs corrompidos** listados em [`../../README.md`](../../README.md).

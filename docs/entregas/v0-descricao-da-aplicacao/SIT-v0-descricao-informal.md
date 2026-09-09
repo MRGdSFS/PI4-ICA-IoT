@@ -9,18 +9,16 @@
 
 ## SIT — Sistema IoT de Irrigação Inteligente para Cultivo de Tomate
 
-**Equipe e atribuições**
+**Equipe de desenvolvimento**
 
-| Integrante | Atribuição principal |
-| :-- | :-- |
-| Alisson Jaime Sales Barros | Gerência do projeto, arquitetura do sistema e integração |
-| Gabriel Vaz de Oliveira | Hardware e firmware (nó sensor/atuador ESP32) |
-| José Ferreira Lessa | Comunicação, infraestrutura de dados e painel de monitoramento |
-| Matheus Rocha Gomes da Silva | Inteligência computacional (dados, modelagem e validação) |
+Alisson Jaime Sales Barros  
+Gabriel Vaz de Oliveira  
+José Ferreira Lessa  
+Matheus Rocha Gomes da Silva
 
-> As atribuições indicam o responsável por conduzir cada frente, não exclusividade:
-> todos os integrantes participam das decisões de arquitetura, modelo, hardware e
-> *trade-offs*, conforme previsto na disciplina.
+> O projeto é conduzido de forma integrada: as decisões de arquitetura, modelo, hardware e
+> *trade-offs* são tomadas em conjunto e todos os integrantes acompanham o sistema
+> completo, conforme previsto na disciplina.
 
 ---
 
