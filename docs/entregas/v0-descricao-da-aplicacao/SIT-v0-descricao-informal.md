@@ -1,26 +1,24 @@
-# UNIVERSIDADE FEDERAL DO CEARÁ
-## DEPARTAMENTO DE ENGENHARIA DE TELEINFORMÁTICA
-## ENGENHARIA DE COMPUTAÇÃO
-## INTERNET DAS COISAS (TI0179) — PROJETO INTEGRADO IV
+<!-- capa -->
+**UNIVERSIDADE FEDERAL DO CEARÁ**  
+**DEPARTAMENTO DE ENGENHARIA DE TELEINFORMÁTICA**  
+**ENGENHARIA DE COMPUTAÇÃO**  
+**INTERNET DAS COISAS (TI0179) — PROJETO INTEGRADO IV**
 
----
+&nbsp;
 
-# Descrição Informal da Aplicação
+**Descrição Informal da Aplicação**
 
-## SIT — Sistema IoT de Irrigação Inteligente para Cultivo de Tomate
+**SIT — Sistema IoT de Irrigação Inteligente para Cultivo de Tomate**
 
-**Equipe de desenvolvimento**
+&nbsp;
 
 Alisson Jaime Sales Barros  
 Gabriel Vaz de Oliveira  
 José Ferreira Lessa  
 Matheus Rocha Gomes da Silva
+<!-- /capa -->
 
-> O projeto é conduzido de forma integrada: as decisões de arquitetura, modelo, hardware e
-> *trade-offs* são tomadas em conjunto e todos os integrantes acompanham o sistema
-> completo, conforme previsto na disciplina.
-
----
+<!-- quebra-de-pagina -->
 
 ## GLOSSÁRIO
 
@@ -52,6 +50,10 @@ Matheus Rocha Gomes da Silva
 | 08/09/2026 | 0.1 | Descrição informal da aplicação: contexto, requisitos funcionais e não funcionais, arquitetura preliminar e plano de entregas. | Equipe completa |
 
 ---
+
+> O projeto é conduzido de forma integrada: as decisões de arquitetura, modelo, hardware e
+> *trade-offs* são tomadas em conjunto e todos os integrantes acompanham o sistema
+> completo, conforme previsto na disciplina.
 
 ## 1. INTRODUÇÃO
 

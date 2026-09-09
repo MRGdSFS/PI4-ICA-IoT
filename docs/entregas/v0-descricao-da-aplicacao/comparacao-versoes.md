@@ -53,7 +53,7 @@ que estava no repositório com 2 bytes) foi recuperado, e ele muda o enquadramen
 | 20 | Sem plano de entregas | O grupo mencionava "critérios de aceitação para cada entrega" na tabela de comparação, mas eles não existiam | Seção 5.6, mapeando v0–v4 às fases e marcos M1–M6 |
 | 21 | Sem riscos | — | Seção 5.7, com 7 riscos e mitigação — incluindo o risco de o modelo não transferir do solo do testbed para o substrato do vaso |
 | 22 | 1 referência | — | 13 referências, com nota indicando quais precisam ter autores, volume, páginas e DOI conferidos antes do relatório final |
-| 23 | Texto quase todo em **negrito** | Negrito em tudo é negrito em nada, e vinha de artefato de colagem | Negrito só onde há ênfase real |
+| 23 | Texto quase todo em **negrito** | **Não era erro do grupo:** o template do professor traz `<w:b val="1"/>` no `docDefaults`, ou seja, negrito é o padrão do arquivo — o template dele sai igualmente todo em negrito. Ainda assim, negrito em tudo é negrito em nada num documento de ~15 páginas | Corpo em peso normal, com negrito reservado à ênfase real. É a **única** divergência deliberada de formatação em relação ao template |
 
 ---
 
@@ -69,6 +69,22 @@ Nem tudo mudou, e o que estava bom continua:
 - O **MQTT** como protocolo.
 - O **ciclo medir → decidir → atuar → nova medição**, que já estava na descrição da
   aplicação e virou o eixo do documento.
+
+---
+
+---
+
+## Formatação
+
+O `.docx` é gerado a partir do próprio template do professor
+(`docs/disciplina/template-v0-descricao-informal.docx`), herdando dele tamanho de página
+A4, margens de 2,54 cm, rodapé com número de página, capa em página própria, Calibri 12 pt,
+entrelinha 1,15, o estilo `Heading 1` das seções numeradas e as tabelas com apenas filetes
+horizontais.
+
+A única diferença deliberada é o **corpo em peso normal** em vez de negrito, pelo motivo
+da linha 23 acima. Para reproduzir o negrito do template, basta alterar o valor padrão de
+`bold` em `add_runs()` no `tools/md2docx.py`.
 
 ---
 
