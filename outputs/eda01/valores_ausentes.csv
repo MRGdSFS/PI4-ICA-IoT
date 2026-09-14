@@ -1,0 +1,12 @@
+arquivo,coluna,valores_ausentes,percentual
+IoT Dataset from an Evolving Tomato Cultivation Te\2023\water_meter2023.csv,current_volume,1,0.0019710647691883157
+IoT Dataset from an Evolving Tomato Cultivation Te\2023\water_valve2023.csv,valve_state,431,0.5705661975932962
+IoT Dataset from an Evolving Tomato Cultivation Te\2023\water_valve2023.csv,water_temperature,431,0.5705661975932962
+IoT Dataset from an Evolving Tomato Cultivation Te\2023\water_valve2023.csv,ambient_temperature,431,0.5705661975932962
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\environmental2024.csv,pressure,3506,37.589793073871554
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\environmental2024.csv,humidity,2,0.021443122118580467
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\soil2024.csv,electrical_conductivity,19,0.01043079169708981
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\soil2024.csv,humidity,296,0.16250075485992543
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\soil2024.csv,temperature,19,0.01043079169708981
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\leaf_temperature2025.csv,leaf_temperature,2494,0.9555079632048978
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\pressure2025.csv,pressure,620,0.27994383062495204

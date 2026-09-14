@@ -1,0 +1,22 @@
+arquivo,coluna,unidade,primeiro_registro,ultimo_registro,registros_validos
+IoT Dataset from an Evolving Tomato Cultivation Te\2023\environmental2023.csv,ts_generation,ms,2023-06-29 06:14:46.484,2023-09-13 21:51:25.121,10964
+IoT Dataset from an Evolving Tomato Cultivation Te\2023\indicators2023.csv,ts_generation,ms,2023-06-29 06:14:46.484,2023-10-24 00:05:57.273,118
+IoT Dataset from an Evolving Tomato Cultivation Te\2023\soil2023.csv,ts_generation,ms,2023-06-06 14:57:15.025,2023-10-18 13:56:58.886,47894
+IoT Dataset from an Evolving Tomato Cultivation Te\2023\water_meter2023.csv,ts_generation,ms,2023-06-15 10:47:56.284,2023-10-25 08:12:47.652,50734
+IoT Dataset from an Evolving Tomato Cultivation Te\2023\water_valve2023.csv,ts_generation,ms,2023-06-20 15:23:20.245,2023-12-31 22:59:37.581,75539
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\environmental2024.csv,ts_generation,ms,2024-06-12 00:04:32.436,2024-09-05 02:33:20.814,9327
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\indicators2024.csv,ts_generation,ms,2024-01-18 08:12:59.694,2024-09-05 00:01:25.138,205
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\pressure2024.csv,ts_generation,ms,2024-06-10 12:49:15.602,2024-09-25 09:55:26.955,155163
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\soil2024.csv,ts_generation,ms,2023-06-06 14:57:15.025,2024-09-23 13:27:31.453,182153
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\valve_controller2024.csv,ts_generation,ms,2024-06-10 13:36:43.273,2024-09-19 08:13:51.290,64047
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\water_meter2024.csv,ts_generation,ms,2024-06-10 07:51:57.991,2024-10-01 09:57:25.281,66122
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\water_potential2024.csv,ts_generation,ms,2024-04-18 08:52:44.426,2024-09-23 10:04:42.602,139048
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\environmental2025.csv,ts_generation,ms,2025-06-26 05:50:20.100,2025-10-28 08:03:52.662,17318
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\fruit2025.csv,ts_generation,ms,2024-12-31 23:04:02.194,2026-01-15 16:06:08.798,201899
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\indicators2025.csv,ts_generation,ms,2025-06-26 05:50:20.100,2025-10-28 00:02:34.429,125
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\leaf_temperature2025.csv,ts_generation,ms,2025-05-31 22:01:10.188,2026-01-13 11:11:23.106,261013
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\pressure2025.csv,ts_generation,ms,2025-05-31 22:00:45.510,2025-12-10 10:14:21.310,221473
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\soil2025.csv,ts_generation,ms,2025-05-31 22:00:07.298,2025-11-03 10:03:52.195,193066
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\stem2025.csv,ts_generation,ms,2025-05-31 22:01:10.740,2026-01-15 16:18:27.083,121987
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\valve_controller2025.csv,ts_generation,ms,2025-06-06 08:01:24.511,2025-12-17 07:45:15.177,102014
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\water_meter2025.csv,ts_generation,ms,2025-06-01 10:08:02.498,2026-01-12 15:51:35.243,143470

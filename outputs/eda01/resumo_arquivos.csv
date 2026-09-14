@@ -1,0 +1,22 @@
+arquivo,linhas,colunas,tamanho_MB
+IoT Dataset from an Evolving Tomato Cultivation Te\2023\environmental2023.csv,10964,6,1.0973243713378906
+IoT Dataset from an Evolving Tomato Cultivation Te\2023\indicators2023.csv,118,8,0.005787849426269531
+IoT Dataset from an Evolving Tomato Cultivation Te\2023\soil2023.csv,47894,6,4.707755088806152
+IoT Dataset from an Evolving Tomato Cultivation Te\2023\water_meter2023.csv,50734,4,4.561501502990723
+IoT Dataset from an Evolving Tomato Cultivation Te\2023\water_valve2023.csv,75539,6,6.974919319152832
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\environmental2024.csv,9327,6,0.9402217864990234
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\indicators2024.csv,205,8,0.009631156921386719
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\pressure2024.csv,155163,4,13.634991645812988
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\soil2024.csv,182153,6,18.046046257019043
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\valve_controller2024.csv,64047,4,5.547725677490234
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\water_meter2024.csv,66122,4,5.750463485717773
+IoT Dataset from an Evolving Tomato Cultivation Te\2024\water_potential2024.csv,139048,4,12.414947509765625
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\environmental2025.csv,17318,6,1.7726354598999023
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\fruit2025.csv,201899,4,17.69858741760254
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\indicators2025.csv,125,8,0.0061092376708984375
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\leaf_temperature2025.csv,261013,4,23.0339412689209
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\pressure2025.csv,221473,4,19.344633102416992
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\soil2025.csv,193066,6,19.017033576965332
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\stem2025.csv,121987,4,9.761534690856934
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\valve_controller2025.csv,102014,4,8.844588279724121
+IoT Dataset from an Evolving Tomato Cultivation Te\2025\water_meter2025.csv,143470,4,12.984180450439453
