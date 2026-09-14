@@ -895,11 +895,11 @@ plt.close(fig)
 
 
 # ============================================================
-# 6. TAXA DE SECAGEM DO SOLO
+# 6. DINÂMICA TEMPORAL DA UMIDADE DO SOLO
 # ============================================================
 
 print("\n" + "=" * 70)
-print("6. TAXA DE SECAGEM DO SOLO")
+print("6. DINÂMICA TEMPORAL DA UMIDADE DO SOLO")
 print("=" * 70)
 
 drying = soil_analysis.copy()
@@ -908,8 +908,9 @@ drying = drying.sort_values(
     ["line", "datetime"]
 ).reset_index(drop=True)
 
+
 # ------------------------------------------------------------
-# VERIFICAÇÃO DA FREQUÊNCIA DE AMOSTRAGEM DO SENSOR
+# 6.1 FREQUÊNCIA DE AMOSTRAGEM DO SENSOR
 # ------------------------------------------------------------
 
 print("\n" + "-" * 70)
@@ -924,7 +925,6 @@ drying["intervalo_min"] = (
     / 60
 )
 
-# Estatísticas dos intervalos entre leituras
 frequencia_sensor = (
     drying
     .groupby("line")["intervalo_min"]
@@ -941,21 +941,12 @@ frequencia_sensor = (
     )
 )
 
-print(
-    "\nIntervalos entre leituras (minutos):"
-)
-
-print(
-    frequencia_sensor.to_string()
-)
+print("\nIntervalos entre leituras (minutos):")
+print(frequencia_sensor.to_string())
 
 frequencia_sensor.to_csv(
     OUTPUT_DIR / "06_frequencia_sensor.csv"
 )
-
-# ------------------------------------------------------------
-# Intervalo mais comum
-# ------------------------------------------------------------
 
 print("\nIntervalo mediano por linha:")
 
@@ -973,17 +964,20 @@ for linha in LINHAS:
         f"{valores.median():.3f} min"
     )
 
+
 # ------------------------------------------------------------
-# Distribuição dos intervalos
+# DISTRIBUIÇÃO DOS INTERVALOS
 # ------------------------------------------------------------
 
 fig, ax = plt.subplots(figsize=(10, 5))
 
 for linha, grupo in drying.groupby("line"):
+
     intervalos = grupo["intervalo_min"].dropna()
 
-    # Remove apenas valores não positivos para o gráfico
-    intervalos = intervalos[intervalos > 0]
+    intervalos = intervalos[
+        intervalos > 0
+    ]
 
     ax.hist(
         intervalos,
@@ -997,8 +991,12 @@ ax.set_title(
     "do sensor de umidade"
 )
 
-ax.set_xlabel("Intervalo entre leituras (min)")
+ax.set_xlabel(
+    "Intervalo entre leituras (min)"
+)
+
 ax.set_ylabel("Frequência")
+
 ax.legend()
 ax.grid(True, alpha=0.3)
 
@@ -1007,25 +1005,53 @@ salvar_figura(
     "06_frequencia_sensor.png"
 )
 
+
+# ------------------------------------------------------------
+# 6.2 VARIAÇÃO DA UMIDADE ENTRE LEITURAS
+# ------------------------------------------------------------
+
 resultados_secagem = []
+
+maiores_variacoes_todas = []
 
 for linha, grupo in drying.groupby("line"):
 
     grupo = grupo.copy()
 
-    grupo["delta_moisture"] = (
-        grupo["soil_moisture"].diff()
+    # --------------------------------------------------------
+    # Diferença entre leituras consecutivas
+    # --------------------------------------------------------
+
+    grupo["datetime_anterior"] = (
+        grupo["datetime"].shift(1)
     )
 
-    # ------------------------------------------------------------
-    # ANÁLISE DE VARIAÇÕES ABRUPTAS
-    # ------------------------------------------------------------
+    grupo["umidade_anterior"] = (
+        grupo["soil_moisture"].shift(1)
+    )
+
+    grupo["delta_moisture"] = (
+        grupo["soil_moisture"]
+        - grupo["umidade_anterior"]
+    )
 
     grupo["abs_delta_moisture"] = (
         grupo["delta_moisture"].abs()
     )
 
-    print(f"\n  Linha {linha} — variações de umidade:")
+    grupo["delta_tempo_min"] = (
+        grupo["datetime"]
+        - grupo["datetime_anterior"]
+    ).dt.total_seconds() / 60
+
+
+    # --------------------------------------------------------
+    # Estatísticas das variações
+    # --------------------------------------------------------
+
+    print(
+        f"\nLinha {linha} — variações de umidade:"
+    )
 
     print(
         grupo["abs_delta_moisture"]
@@ -1042,42 +1068,75 @@ for linha, grupo in drying.groupby("line"):
         .to_string()
     )
 
+
+    # --------------------------------------------------------
+    # Frequência de grandes variações
+    # --------------------------------------------------------
+
     limiares = [1, 2, 5, 10, 15, 20, 30]
 
-    for linha, grupo_linha in grupo.groupby("line"):
-
-        delta_abs = grupo_linha["delta_moisture"].abs().dropna()
-
-        print(f"\nLinha {linha}")
-        print("-" * 60)
-
-        for limiar in limiares:
-            quantidade = (delta_abs > limiar).sum()
-            percentual = 100 * quantidade / len(delta_abs)
-
-            print(
-                f"|Δ umidade| > {limiar:2}: "
-                f"{quantidade:6} ({percentual:6.2f}%)"
-            )
-
-    # =====================================================
-
-    grupo["delta_tempo_min"] = (
-    grupo["datetime"]
-    .diff()
-    .dt.total_seconds()
-    / 60
+    delta_abs = (
+        grupo["delta_moisture"]
+        .abs()
+        .dropna()
     )
 
-    # ------------------------------------------------------------
-    # FILTRO DOS INTERVALOS TEMPORAIS
-    # ------------------------------------------------------------
+    print(f"\nLinha {linha}")
+    print("-" * 60)
 
-    # Intervalos muito pequenos podem produzir taxas artificiais
-    # devido ao ruído do sensor ou registros muito próximos.
-    #
-    # Intervalos muito grandes representam lacunas na aquisição
-    # e não são adequados para estimar uma taxa local de secagem.
+    for limiar in limiares:
+
+        quantidade = (
+            delta_abs > limiar
+        ).sum()
+
+        percentual = (
+            100 * quantidade / len(delta_abs)
+        )
+
+        print(
+            f"|Δ umidade| > {limiar:2}: "
+            f"{quantidade:6} "
+            f"({percentual:6.2f}%)"
+        )
+
+
+    # --------------------------------------------------------
+    # Maiores variações
+    # --------------------------------------------------------
+
+    maiores = (
+        grupo
+        .dropna(subset=["delta_moisture"])
+        .sort_values(
+            "abs_delta_moisture",
+            ascending=False
+        )
+        .head(20)
+        .copy()
+    )
+
+    maiores["line"] = linha
+
+    maiores_variacoes_todas.append(
+        maiores[
+            [
+                "line",
+                "datetime_anterior",
+                "datetime",
+                "umidade_anterior",
+                "soil_moisture",
+                "delta_tempo_min",
+                "delta_moisture",
+                "abs_delta_moisture"
+            ]
+        ]
+    )
+
+
+    # --------------------------------------------------------
+    # 6.3 FILTRO DOS INTERVALOS TEMPORAIS
+    # --------------------------------------------------------
 
     intervalo_minimo = 1
     intervalo_maximo = 30
@@ -1088,14 +1147,15 @@ for linha, grupo in drying.groupby("line"):
     )
 
     print(
-        f"  Linha {linha}: "
-        f"{grupo['intervalo_valido'].sum()} intervalos válidos de "
-        f"{len(grupo)}"
+        f"\nLinha {linha}: "
+        f"{grupo['intervalo_valido'].sum()} "
+        f"intervalos válidos de {len(grupo)}"
     )
 
-    # ------------------------------------------------------------
-    # CONVERSÃO PARA HORAS
-    # ------------------------------------------------------------
+
+    # --------------------------------------------------------
+    # Taxa de variação da umidade
+    # --------------------------------------------------------
 
     grupo["delta_tempo_h"] = (
         grupo["delta_tempo_min"] / 60
@@ -1106,71 +1166,117 @@ for linha, grupo in drying.groupby("line"):
         "delta_tempo_h"
     ] = np.nan
 
-    # ------------------------------------------------------------
-    # TAXA DE VARIAÇÃO DA UMIDADE
-    # ------------------------------------------------------------
-
     grupo["taxa_umidade_por_hora"] = (
         grupo["delta_moisture"]
         / grupo["delta_tempo_h"]
     )
 
-    # Consideramos apenas variações negativas.
-    secagem = grupo[
-        grupo["taxa_umidade_por_hora"] < 0
+
+    # --------------------------------------------------------
+    # Apenas intervalos válidos
+    # --------------------------------------------------------
+
+    validos = grupo[
+        grupo["intervalo_valido"]
     ].copy()
 
+
+    # Apenas reduções da umidade
+    secagem = validos[
+        validos["taxa_umidade_por_hora"] < 0
+    ].copy()
+
+
+    # --------------------------------------------------------
+    # Resultados
+    # --------------------------------------------------------
+
     resultados_secagem.append({
-    "linha": linha,
 
-    "intervalo_mediano_min":
-        grupo["delta_tempo_min"].median(),
+        "linha":
+            linha,
 
-    "intervalos_validos":
-        grupo["intervalo_valido"].sum(),
+        "intervalo_mediano_min":
+            validos["delta_tempo_min"].median(),
 
-    "intervalos_invalidos":
-        (~grupo["intervalo_valido"]).sum(),
+        "intervalos_validos":
+            grupo["intervalo_valido"].sum(),
 
-    "media_delta_umidade":
-        grupo["delta_moisture"].mean(),
+        "intervalos_invalidos":
+            (~grupo["intervalo_valido"]).sum(),
 
-    "mediana_taxa_secagem_por_hora":
-        secagem[
-            "taxa_umidade_por_hora"
-        ].median(),
+        "media_delta_umidade":
+            validos["delta_moisture"].mean(),
 
-    "p01_taxa_umidade_por_hora":
-        secagem["taxa_umidade_por_hora"].quantile(0.01),
+        "mediana_taxa_variacao_por_hora":
+            secagem[
+                "taxa_umidade_por_hora"
+            ].median(),
 
-    "p05_taxa_umidade_por_hora":
-        secagem["taxa_umidade_por_hora"].quantile(0.05),
+        "p01_taxa_variacao_por_hora":
+            secagem[
+                "taxa_umidade_por_hora"
+            ].quantile(0.01),
 
-    "p25_taxa_umidade_por_hora":
-        secagem["taxa_umidade_por_hora"].quantile(0.25),
+        "p05_taxa_variacao_por_hora":
+            secagem[
+                "taxa_umidade_por_hora"
+            ].quantile(0.05),
 
-    "p75_taxa_umidade_por_hora":
-        secagem["taxa_umidade_por_hora"].quantile(0.75),
+        "p25_taxa_variacao_por_hora":
+            secagem[
+                "taxa_umidade_por_hora"
+            ].quantile(0.25),
 
-    "p95_taxa_umidade_por_hora":
-        secagem["taxa_umidade_por_hora"].quantile(0.95),
+        "p75_taxa_variacao_por_hora":
+            secagem[
+                "taxa_umidade_por_hora"
+            ].quantile(0.75),
 
-    "p99_taxa_umidade_por_hora":
-        secagem["taxa_umidade_por_hora"].quantile(0.99),
+        "p95_taxa_variacao_por_hora":
+            secagem[
+                "taxa_umidade_por_hora"
+            ].quantile(0.95),
 
-    "min_taxa_umidade_por_hora":
-        secagem[
-            "taxa_umidade_por_hora"
-        ].min(),
+        "p99_taxa_variacao_por_hora":
+            secagem[
+                "taxa_umidade_por_hora"
+            ].quantile(0.99),
 
-    "eventos_secagem":
-        len(secagem)
+        "min_taxa_variacao_por_hora":
+            secagem[
+                "taxa_umidade_por_hora"
+            ].min(),
+
+        "eventos_reducao_umidade":
+            len(secagem)
     })
+
+
+# ------------------------------------------------------------
+# SALVAR MAIORES VARIAÇÕES
+# ------------------------------------------------------------
+
+maiores_variacoes_df = pd.concat(
+    maiores_variacoes_todas,
+    ignore_index=True
+)
+
+maiores_variacoes_df.to_csv(
+    OUTPUT_DIR / "06_maiores_variacoes_umidade.csv",
+    index=False
+)
+
+
+# ------------------------------------------------------------
+# SALVAR RESULTADOS DA TAXA
+# ------------------------------------------------------------
 
 secagem_df = pd.DataFrame(
     resultados_secagem
 )
 
+print("\nResumo da taxa de variação da umidade:")
 print(
     secagem_df.to_string(index=False)
 )
