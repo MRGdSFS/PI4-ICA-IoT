@@ -8,3 +8,6 @@
 # Ignore text files from data
 data/**/*.TXT
 data/**/*.md
+
+# Ignore pycache
+*__pycache__

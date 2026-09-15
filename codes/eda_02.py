@@ -5,9 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # ============================================================
-
 # CONFIGURAÇÃO
-
 # ============================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,22 +28,15 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ============================================================
 
-# Ano principal da análise.
-
-# 2025 possui a cadeia mais completa de dados.
-
+# Ano principal da análise: 2025 possui a cadeia mais completa de dados.
 ANO = 2025
 
 # Linhas de cultivo presentes nos arquivos.
-
 LINHAS = [1, 2, 3, 4, 5]
 
 # Tolerância utilizada no alinhamento temporal.
-
 # Dois registros com diferença menor ou igual a este valor
-
 # serão considerados temporalmente correspondentes.
-
 TOLERANCIA_ALINHAMENTO = "5min"
 
 # ============================================================
@@ -54,93 +45,12 @@ TOLERANCIA_ALINHAMENTO = "5min"
 
 # ============================================================
 
-def carregar_csv(nome):
-    """
-    Carrega um CSV do dataset e converte ts_generation
-    para datetime.
-
-    Esta conversão já foi investigada no EDA01. Aqui ela é
-    utilizada apenas para possibilitar a construção da série
-    temporal integrada.
-    """
-
-    caminho = DATA_DIR / nome
-
-    if not caminho.exists():
-        raise FileNotFoundError(f"Arquivo não encontrado: {caminho}")
-
-    df = pd.read_csv(caminho)
-
-    # Remove possíveis colunas de índice geradas pelo pandas.
-    unnamed_columns = [
-        col for col in df.columns
-        if str(col).startswith("Unnamed")
-    ]
-
-    if unnamed_columns:
-        df = df.drop(columns=unnamed_columns)
-
-    # Conversão temporal.
-    if "ts_generation" in df.columns:
-
-        ts = pd.to_numeric(
-            df["ts_generation"],
-            errors="coerce"
-        )
-
-        df["datetime"] = pd.to_datetime(
-            ts,
-            unit="ms",
-            errors="coerce"
-        )
-
-    return df
-
-def salvar_figura(fig, nome):
-    """
-    Salva uma figura na pasta de saída.
-    """
-
-
-    caminho = OUTPUT_DIR / nome
-
-    fig.savefig(
-        caminho,
-        dpi=150,
-        bbox_inches="tight"
-    )
-
-    plt.close(fig)
-
-    print(f"Figura salva: {caminho}")
-
-def encontrar_coluna(df, candidatos):
-    """
-    Procura uma coluna utilizando uma lista de possíveis nomes.
-
-    Retorna None caso nenhuma seja encontrada.
-    """
-
-    for candidato in candidatos:
-
-        if candidato in df.columns:
-            return candidato
-
-    return None
-
-def mostrar_colunas(df, nome):
-    """
-    Mostra as colunas disponíveis de um DataFrame.
-    """
-
-
-    print("\n" + "-" * 70)
-    print(f"COLUNAS — {nome}")
-    print("-" * 70)
-
-    for coluna in df.columns:
-        print(f"  - {coluna}")
-
+from utils import carregar_csv
+from utils import salvar_figura
+from utils import encontrar_coluna
+from utils import mostrar_colunas
+from utils import print_titulo
+from utils import integrar_por_linha
 
 # ============================================================
 
@@ -148,9 +58,7 @@ def mostrar_colunas(df, nome):
 
 # ============================================================
 
-print("\n" + "=" * 70)
-print("1. CARREGAMENTO DOS DADOS")
-print("=" * 70)
+print_titulo("1. CARREGAMENTO DOS DADOS")
 
 arquivos = {
 "environmental": f"{ANO}/environmental{ANO}.csv",
@@ -165,7 +73,7 @@ for nome, arquivo in arquivos.items():
     
     try:
 
-        df = carregar_csv(arquivo)
+        df = carregar_csv(arquivo, DATA_DIR)
 
         dados[nome] = df
 
@@ -181,16 +89,13 @@ for nome, arquivo in arquivos.items():
 
         print(f"\nAVISO: {erro}")
 
-
 # ============================================================
 
 # 2. VERIFICAÇÃO TEMPORAL
 
 # ============================================================
 
-print("\n" + "=" * 70)
-print("2. VERIFICAÇÃO DA SÉRIE TEMPORAL")
-print("=" * 70)
+print_titulo("2. VERIFICAÇÃO DA SÉRIE TEMPORAL")
 
 temporal_resumo = []
 
@@ -279,9 +184,7 @@ for nome, df in dados.items():
 # 3. CONSTRUÇÃO DA SÉRIE TEMPORAL INTEGRADA
 # ============================================================
 
-print("\n" + "=" * 70)
-print("3. CONSTRUÇÃO DA SÉRIE TEMPORAL INTEGRADA")
-print("=" * 70)
+print_titulo("3. CONSTRUÇÃO DA SÉRIE TEMPORAL INTEGRADA")
 
 """
 A série integrada será construída utilizando o solo como
@@ -378,141 +281,6 @@ soil = (
 )
 
 # ------------------------------------------------------------
-# FUNÇÃO PARA INTEGRAR DADOS DE UM SENSOR POR LINHA
-# ------------------------------------------------------------
-
-def integrar_por_linha(base, outro, prefixo):
-
-    if outro is None:
-        return base
-
-    if "datetime" not in outro.columns:
-        print(
-            f"\nAviso: dataset '{prefixo}' não possui datetime. "
-            "Ignorado."
-        )
-        return base
-
-    outro = outro.copy()
-
-    # Detecta a coluna de linha
-    coluna_linha = encontrar_coluna(
-        outro,
-        ["line", "Line", "LINE"]
-    )
-
-    if coluna_linha is None:
-        print(
-            f"\nAviso: dataset '{prefixo}' não possui "
-            "identificação de linha. "
-            "Integração por linha não realizada."
-        )
-        return base
-
-    # Padroniza o nome da linha
-    if coluna_linha != "line":
-        outro = outro.rename(
-            columns={coluna_linha: "line"}
-        )
-
-    outro = (
-        outro
-        .dropna(subset=["datetime"])
-        .sort_values(["line", "datetime"])
-        .reset_index(drop=True)
-    )
-
-    resultados = []
-
-    # --------------------------------------------------------
-    # Integração separada para cada linha
-    # --------------------------------------------------------
-
-    for linha in LINHAS:
-
-        base_linha = base[
-            base["line"] == linha
-        ].copy()
-
-        outro_linha = outro[
-            outro["line"] == linha
-        ].copy()
-
-        if base_linha.empty:
-            continue
-
-        if outro_linha.empty:
-            print(
-                f"  Linha {linha}: sem dados em '{prefixo}'."
-            )
-            resultados.append(base_linha)
-            continue
-
-        # ----------------------------------------------------
-        # Remover colunas que não devem entrar novamente
-        # ----------------------------------------------------
-
-        colunas_remover = [
-            "line",
-            "ts_generation",
-            "generated_by"
-        ]
-
-        outro_linha = outro_linha.drop(
-            columns=[
-                col
-                for col in colunas_remover
-                if col in outro_linha.columns
-            ]
-        )
-
-        # ----------------------------------------------------
-        # Renomear variáveis do sensor
-        # ----------------------------------------------------
-
-        outras_colunas = [
-            col
-            for col in outro_linha.columns
-            if col != "datetime"
-        ]
-
-        outro_linha = outro_linha.rename(
-            columns={
-                col: f"{prefixo}_{col}"
-                for col in outras_colunas
-            }
-        )
-
-        # ----------------------------------------------------
-        # Merge temporal
-        # ----------------------------------------------------
-
-        unido = pd.merge_asof(
-            base_linha.sort_values("datetime"),
-            outro_linha.sort_values("datetime"),
-            on="datetime",
-            direction="nearest",
-            tolerance=pd.Timedelta(
-                TOLERANCIA_ALINHAMENTO
-            )
-        )
-
-        resultados.append(unido)
-
-    if not resultados:
-        return base
-
-    return (
-        pd.concat(
-            resultados,
-            ignore_index=True
-        )
-        .sort_values(["line", "datetime"])
-        .reset_index(drop=True)
-    )
-
-
-# ------------------------------------------------------------
 # 3.1 INTEGRAR VÁLVULA
 # ------------------------------------------------------------
 
@@ -523,7 +291,9 @@ if "valve" in dados:
     integrada = integrar_por_linha(
         soil,
         dados["valve"],
-        "valve"
+        "valve",
+        LINHAS,
+        TOLERANCIA_ALINHAMENTO
     )
 
     print(
@@ -549,7 +319,9 @@ if "water_meter" in dados:
     integrada = integrar_por_linha(
         integrada,
         dados["water_meter"],
-        "water"
+        "water",
+        LINHAS,
+        TOLERANCIA_ALINHAMENTO
     )
 
     print(
@@ -729,9 +501,7 @@ print(
 # 4. QUALIDADE DOS DADOS RELEVANTES AO PROBLEMA
 # ============================================================
 
-print("\n" + "=" * 70)
-print("4. QUALIDADE DOS DADOS RELEVANTES")
-print("=" * 70)
+print_titulo("4. QUALIDADE DOS DADOS RELEVANTES")
 
 qualidade = []
 
@@ -788,9 +558,7 @@ qualidade_df.to_csv(
 # 5. ANÁLISE DA UMIDADE DO SOLO
 # ============================================================
 
-print("\n" + "=" * 70)
-print("5. DINÂMICA DA UMIDADE DO SOLO")
-print("=" * 70)
+print_titulo("5. DINÂMICA DA UMIDADE DO SOLO")
 
 # ------------------------------------------------------------
 # Preparação
@@ -888,7 +656,8 @@ ax.grid(
 
 salvar_figura(
     fig,
-    "05_umidade_solo_temporal.png"
+    "05_umidade_solo_temporal.png",
+    OUTPUT_DIR
 )
 
 plt.close(fig)
@@ -898,28 +667,36 @@ plt.close(fig)
 # 6. DINÂMICA TEMPORAL DA UMIDADE DO SOLO
 # ============================================================
 
-print("\n" + "=" * 70)
-print("6. DINÂMICA TEMPORAL DA UMIDADE DO SOLO")
-print("=" * 70)
+print_titulo("6. DINÂMICA TEMPORAL DA UMIDADE DO SOLO")
 
 drying = soil_analysis.copy()
 
+# ------------------------------------------------------------
+# Preparação
+# ------------------------------------------------------------
+
+# Cada série temporal será definida por:
+#   linha + sensor (generated_by)
+#
+# Isso evita comparar leituras de sensores diferentes,
+# inclusive sensores instalados em profundidades diferentes.
+
 drying = drying.sort_values(
-    ["line", "datetime"]
+    ["line", "generated_by", "datetime"]
 ).reset_index(drop=True)
 
 
 # ------------------------------------------------------------
-# 6.1 FREQUÊNCIA DE AMOSTRAGEM DO SENSOR
+# 6.1 FREQUÊNCIA DE AMOSTRAGEM DOS SENSORES
 # ------------------------------------------------------------
 
 print("\n" + "-" * 70)
-print("FREQUÊNCIA DE AMOSTRAGEM DO SENSOR DE UMIDADE")
+print("FREQUÊNCIA DE AMOSTRAGEM DOS SENSORES")
 print("-" * 70)
 
 drying["intervalo_min"] = (
     drying
-    .groupby("line")["datetime"]
+    .groupby(["line", "generated_by"])["datetime"]
     .diff()
     .dt.total_seconds()
     / 60
@@ -927,7 +704,7 @@ drying["intervalo_min"] = (
 
 frequencia_sensor = (
     drying
-    .groupby("line")["intervalo_min"]
+    .groupby(["line", "generated_by"])["intervalo_min"]
     .describe(
         percentiles=[
             0.01,
@@ -948,19 +725,22 @@ frequencia_sensor.to_csv(
     OUTPUT_DIR / "06_frequencia_sensor.csv"
 )
 
-print("\nIntervalo mediano por linha:")
+print("\nIntervalo mediano por linha e sensor:")
 
-for linha in LINHAS:
-    valores = drying.loc[
-        drying["line"] == linha,
-        "intervalo_min"
-    ].dropna()
+for (linha, sensor), grupo in (
+    drying.groupby(["line", "generated_by"])
+):
+
+    valores = (
+        grupo["intervalo_min"]
+        .dropna()
+    )
 
     if valores.empty:
         continue
 
     print(
-        f"  Linha {linha}: "
+        f"  Linha {linha} | Sensor {sensor}: "
         f"{valores.median():.3f} min"
     )
 
@@ -971,24 +751,32 @@ for linha in LINHAS:
 
 fig, ax = plt.subplots(figsize=(10, 5))
 
-for linha, grupo in drying.groupby("line"):
+for (linha, sensor), grupo in (
+    drying.groupby(["line", "generated_by"])
+):
 
-    intervalos = grupo["intervalo_min"].dropna()
+    intervalos = (
+        grupo["intervalo_min"]
+        .dropna()
+    )
 
     intervalos = intervalos[
         intervalos > 0
     ]
 
+    if intervalos.empty:
+        continue
+
     ax.hist(
         intervalos,
         bins=100,
         alpha=0.5,
-        label=f"Linha {linha}"
+        label=f"L{linha} — {sensor}"
     )
 
 ax.set_title(
     "Distribuição dos intervalos entre leituras "
-    "do sensor de umidade"
+    "dos sensores de umidade"
 )
 
 ax.set_xlabel(
@@ -998,11 +786,13 @@ ax.set_xlabel(
 ax.set_ylabel("Frequência")
 
 ax.legend()
+
 ax.grid(True, alpha=0.3)
 
 salvar_figura(
     fig,
-    "06_frequencia_sensor.png"
+    "06_frequencia_sensor.png",
+    OUTPUT_DIR
 )
 
 
@@ -1011,10 +801,12 @@ salvar_figura(
 # ------------------------------------------------------------
 
 resultados_secagem = []
-
 maiores_variacoes_todas = []
 
-for linha, grupo in drying.groupby("line"):
+
+for (linha, sensor), grupo in (
+    drying.groupby(["line", "generated_by"])
+):
 
     grupo = grupo.copy()
 
@@ -1050,7 +842,8 @@ for linha, grupo in drying.groupby("line"):
     # --------------------------------------------------------
 
     print(
-        f"\nLinha {linha} — variações de umidade:"
+        f"\nLinha {linha} — Sensor {sensor} "
+        f"— variações de umidade:"
     )
 
     print(
@@ -1081,7 +874,10 @@ for linha, grupo in drying.groupby("line"):
         .dropna()
     )
 
-    print(f"\nLinha {linha}")
+    print(
+        f"\nLinha {linha} — Sensor {sensor}"
+    )
+
     print("-" * 60)
 
     for limiar in limiares:
@@ -1092,6 +888,8 @@ for linha, grupo in drying.groupby("line"):
 
         percentual = (
             100 * quantidade / len(delta_abs)
+            if len(delta_abs) > 0
+            else 0
         )
 
         print(
@@ -1117,11 +915,13 @@ for linha, grupo in drying.groupby("line"):
     )
 
     maiores["line"] = linha
+    maiores["generated_by"] = sensor
 
     maiores_variacoes_todas.append(
         maiores[
             [
                 "line",
+                "generated_by",
                 "datetime_anterior",
                 "datetime",
                 "umidade_anterior",
@@ -1147,7 +947,7 @@ for linha, grupo in drying.groupby("line"):
     )
 
     print(
-        f"\nLinha {linha}: "
+        f"\nLinha {linha} — Sensor {sensor}: "
         f"{grupo['intervalo_valido'].sum()} "
         f"intervalos válidos de {len(grupo)}"
     )
@@ -1193,8 +993,11 @@ for linha, grupo in drying.groupby("line"):
 
     resultados_secagem.append({
 
-        "linha":
+        "line":
             linha,
+
+        "generated_by":
+            sensor,
 
         "intervalo_mediano_min":
             validos["delta_tempo_min"].median(),
@@ -1276,7 +1079,10 @@ secagem_df = pd.DataFrame(
     resultados_secagem
 )
 
-print("\nResumo da taxa de variação da umidade:")
+print(
+    "\nResumo da taxa de variação da umidade:"
+)
+
 print(
     secagem_df.to_string(index=False)
 )
@@ -1292,9 +1098,7 @@ secagem_df.to_csv(
 
 # ============================================================
 
-print("\n" + "=" * 70)
-print("7. EVENTOS DE IRRIGAÇÃO")
-print("=" * 70)
+print_titulo("7. EVENTOS DE IRRIGAÇÃO")
 
 coluna_valvula = encontrar_coluna(
 integrada,
@@ -1380,7 +1184,8 @@ ax.grid(True, alpha=0.3)
 
 salvar_figura(
     fig,
-    "07_valvula_irrigacao.png"
+    "07_valvula_irrigacao.png",
+    OUTPUT_DIR
 )
 
 # ============================================================
@@ -1389,9 +1194,7 @@ salvar_figura(
 
 # ============================================================
 
-print("\n" + "=" * 70)
-print("8. RESPOSTA DO SOLO À IRRIGAÇÃO")
-print("=" * 70)
+print_titulo("8. RESPOSTA DO SOLO À IRRIGAÇÃO")
 
 if (
 coluna_valvula is not None
@@ -1511,7 +1314,8 @@ ax.grid(True, alpha=0.3)
 
 salvar_figura(
     fig,
-    "08_resposta_umidade_irrigacao.png"
+    "08_resposta_umidade_irrigacao.png",
+    OUTPUT_DIR
 )
 
 
@@ -1521,9 +1325,7 @@ salvar_figura(
 
 # ============================================================
 
-print("\n" + "=" * 70)
-print("9. PADRÃO DIURNO DA UMIDADE")
-print("=" * 70)
+print_titulo("9. PADRÃO DIURNO DA UMIDADE")
 
 if coluna_humidade is not None:
     diario = soil_analysis.copy()
@@ -1585,7 +1387,8 @@ if coluna_humidade is not None:
 
     salvar_figura(
         fig,
-        "09_padrao_diurno_umidade.png"
+        "09_padrao_diurno_umidade.png",
+        OUTPUT_DIR
     )
 
 
@@ -1595,9 +1398,7 @@ if coluna_humidade is not None:
 
 # ============================================================
 
-print("\n" + "=" * 70)
-print("10. INFLUÊNCIA AMBIENTAL")
-print("=" * 70)
+print_titulo("10. INFLUÊNCIA AMBIENTAL")
 
 coluna_temp_ambiente = encontrar_coluna(
     integrada,
@@ -1696,9 +1497,7 @@ if coluna_humidade is not None:
 
 # ============================================================
 
-print("\n" + "=" * 70)
-print("11. CORRELAÇÕES DAS VARIÁVEIS CANDIDATAS")
-print("=" * 70)
+print_titulo("11. CORRELAÇÕES DAS VARIÁVEIS CANDIDATAS")
 
 candidatas = []
 
@@ -1749,9 +1548,7 @@ if candidatas:
 
 # ============================================================
 
-print("\n" + "=" * 70)
-print("12. COMPARAÇÃO ENTRE LINHAS")
-print("=" * 70)
+print_titulo("12. COMPARAÇÃO ENTRE LINHAS")
 
 if (
 coluna_linha_soil is not None
@@ -1816,7 +1613,8 @@ and coluna_humidade is not None
 
     salvar_figura(
         fig,
-        "12_umidade_por_linha.png"
+        "12_umidade_por_linha.png",
+        OUTPUT_DIR
     )
 
 
@@ -1826,9 +1624,7 @@ and coluna_humidade is not None
 
 # ============================================================
 
-print("\n" + "=" * 70)
-print("13. SÍNTESE PARA O DESENVOLVIMENTO DO MODELO")
-print("=" * 70)
+print_titulo("13. SÍNTESE PARA O DESENVOLVIMENTO DO MODELO")
 
 print(
 """
@@ -1888,9 +1684,7 @@ os resultados desta análise exploratória.
 
 # ============================================================
 
-print("\n" + "=" * 70)
-print("EDA02 CONCLUÍDO")
-print("=" * 70)
+print_titulo("EDA02 CONCLUÍDO")
 
 print(
 f"""
