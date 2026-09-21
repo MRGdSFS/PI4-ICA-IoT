@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -48,7 +49,6 @@ def salvar_figura(fig, nome, OUTPUT_DIR):
     Salva uma figura na pasta de saída.
     """
 
-
     caminho = OUTPUT_DIR / nome
 
     fig.savefig(
@@ -88,8 +88,7 @@ def mostrar_colunas(df, nome):
     for coluna in df.columns:
         print(f"  - {coluna}")
 
-def integrar_por_linha(base, outro, prefixo, LINHAS, TOLERANCIA_ALINHAMENTO):
-
+def integrar_por_linha(base,outro,prefixo,LINHAS,TOLERANCIA_ALINHAMENTO):
     if outro is None:
         return base
 
@@ -102,7 +101,10 @@ def integrar_por_linha(base, outro, prefixo, LINHAS, TOLERANCIA_ALINHAMENTO):
 
     outro = outro.copy()
 
-    # Detecta a coluna de linha
+    # --------------------------------------------------------
+    # Identificar coluna de linha
+    # --------------------------------------------------------
+
     coluna_linha = encontrar_coluna(
         outro,
         ["line", "Line", "LINE"]
@@ -116,11 +118,14 @@ def integrar_por_linha(base, outro, prefixo, LINHAS, TOLERANCIA_ALINHAMENTO):
         )
         return base
 
-    # Padroniza o nome da linha
     if coluna_linha != "line":
         outro = outro.rename(
             columns={coluna_linha: "line"}
         )
+
+    # --------------------------------------------------------
+    # Preparação temporal
+    # --------------------------------------------------------
 
     outro = (
         outro
@@ -132,7 +137,7 @@ def integrar_por_linha(base, outro, prefixo, LINHAS, TOLERANCIA_ALINHAMENTO):
     resultados = []
 
     # --------------------------------------------------------
-    # Integração separada para cada linha
+    # Integração separada por linha
     # --------------------------------------------------------
 
     for linha in LINHAS:
@@ -152,51 +157,84 @@ def integrar_por_linha(base, outro, prefixo, LINHAS, TOLERANCIA_ALINHAMENTO):
             print(
                 f"  Linha {linha}: sem dados em '{prefixo}'."
             )
+
             resultados.append(base_linha)
             continue
 
         # ----------------------------------------------------
-        # Remover colunas que não devem entrar novamente
+        # Evitar duplicação da coluna line
         # ----------------------------------------------------
-
-        colunas_remover = [
-            "line",
-            "ts_generation",
-            "generated_by"
-        ]
 
         outro_linha = outro_linha.drop(
             columns=[
-                col
-                for col in colunas_remover
-                if col in outro_linha.columns
+                "line"
             ]
         )
 
         # ----------------------------------------------------
-        # Renomear variáveis do sensor
+        # Preservar identificadores do dataset integrado
         # ----------------------------------------------------
 
-        outras_colunas = [
-            col
-            for col in outro_linha.columns
-            if col != "datetime"
-        ]
+        colunas_identificacao = {
+            "generated_by": f"{prefixo}_generated_by",
+            "ts_generation": f"{prefixo}_ts_generation"
+        }
 
         outro_linha = outro_linha.rename(
             columns={
-                col: f"{prefixo}_{col}"
-                for col in outras_colunas
+                coluna: novo_nome
+                for coluna, novo_nome
+                in colunas_identificacao.items()
+                if coluna in outro_linha.columns
             }
         )
 
         # ----------------------------------------------------
-        # Merge temporal
+        # Renomear demais variáveis
+        # ----------------------------------------------------
+
+        colunas_excluir_prefixo = {
+            "datetime",
+            f"{prefixo}_generated_by",
+            f"{prefixo}_ts_generation"
+        }
+
+        outras_colunas = [
+            coluna
+            for coluna in outro_linha.columns
+            if coluna not in colunas_excluir_prefixo
+        ]
+
+        outro_linha = outro_linha.rename(
+            columns={
+                coluna: f"{prefixo}_{coluna}"
+                for coluna in outras_colunas
+            }
+        )
+
+        # ----------------------------------------------------
+        # Ordenação temporal
+        # ----------------------------------------------------
+
+        base_linha = (
+            base_linha
+            .sort_values("datetime")
+            .reset_index(drop=True)
+        )
+
+        outro_linha = (
+            outro_linha
+            .sort_values("datetime")
+            .reset_index(drop=True)
+        )
+
+        # ----------------------------------------------------
+        # Alinhamento temporal
         # ----------------------------------------------------
 
         unido = pd.merge_asof(
-            base_linha.sort_values("datetime"),
-            outro_linha.sort_values("datetime"),
+            base_linha,
+            outro_linha,
             on="datetime",
             direction="nearest",
             tolerance=pd.Timedelta(
@@ -206,6 +244,10 @@ def integrar_por_linha(base, outro, prefixo, LINHAS, TOLERANCIA_ALINHAMENTO):
 
         resultados.append(unido)
 
+    # --------------------------------------------------------
+    # Consolidar resultados
+    # --------------------------------------------------------
+
     if not resultados:
         return base
 
@@ -214,12 +256,29 @@ def integrar_por_linha(base, outro, prefixo, LINHAS, TOLERANCIA_ALINHAMENTO):
             resultados,
             ignore_index=True
         )
-        .sort_values(["line", "datetime"])
+        .sort_values(
+            ["line", "generated_by", "datetime"]
+        )
         .reset_index(drop=True)
     )
 
-def print_titulo(titulo, n=70):
-    print("\n" + "=" * n)
-    print(titulo)
-    print("=" * n)
+def print_titulo(titulo, n=70, double=True):
+    if(double):
+        print("\n" + "=" * n)
+        print(titulo)
+        print("=" * n)
+    else:
+        print("\n" + "-" * n)
+        print(titulo)
+        print("-" * n)
 
+def pausar_seguir():
+    resposta = input(
+        "\nPosso seguir para a próxima seção? [Enter = sim / n = parar] "
+    ).strip().lower()
+
+    if resposta == "n":
+        print("\nExecução interrompida pelo usuário.")
+        raise SystemExit
+
+    os.system("cls")
