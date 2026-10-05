@@ -19,3 +19,6 @@ __pycache__/
 
 # Ignore extracted copy of the dataset already stored in data/
 codes/IoT Dataset from an Evolving Tomato Cultivation Te/
+
+# Ignore Jupyter checkpoints
+.ipynb_checkpoints/
