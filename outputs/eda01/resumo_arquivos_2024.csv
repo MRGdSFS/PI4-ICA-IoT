@@ -1,0 +1,8 @@
+arquivo,tamanho_MB,colunas
+environmental2024.csv,0.94,"ts_generation, generated_by, co2, pressure, temperature, humidity"
+indicators2024.csv,0.01,"ts_generation, gdd, standard_day_degree_daily, daily_mean_temperature, daily_max_above_Tbase, daily_max, daily_max_reduction, ontario_units"
+pressure2024.csv,13.63,"ts_generation, generated_by, line, pressure"
+soil2024.csv,18.05,"ts_generation, generated_by, line, electrical_conductivity, humidity, temperature"
+valve_controller2024.csv,5.55,"ts_generation, generated_by, line, valve_state"
+water_meter2024.csv,5.75,"ts_generation, device_identifier, line, current_volume"
+water_potential2024.csv,12.41,"ts_generation, generated_by, line, water_potential"

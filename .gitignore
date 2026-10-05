@@ -10,4 +10,12 @@ data/**/*.TXT
 data/**/*.md
 
 # Ignore pycache
-*__pycache__
+__pycache__/
+*.py[cod]
+
+# Ignore local Python virtual environments
+.venv/
+**/.venv/
+
+# Ignore extracted copy of the dataset already stored in data/
+codes/IoT Dataset from an Evolving Tomato Cultivation Te/

@@ -1,0 +1,5 @@
+sensor,fonte,quantidade_leituras,primeiro_horario,ultimo_horario,intervalo_mediano_min,intervalo_medio_min,intervalo_mais_comum_min,intervalo_minimo_min,intervalo_maximo_min
+Temperatura do ar,environmental2024.csv,9327,2024-06-11 21:04:32.436000-03:00,2024-09-04 23:33:20.814000-03:00,10.0,13.14,10.0,9.34,24921.96
+Temperatura do solo,soil2024.csv,182134,2023-06-06 11:57:15.025000-03:00,2024-09-23 10:27:31.453000-03:00,10.02,16.66,10.02,2.82,380502.7
+Umidade do ar,environmental2024.csv,9325,2024-06-11 21:04:32.436000-03:00,2024-09-04 23:33:20.814000-03:00,10.0,13.14,10.0,9.34,24921.96
+Umidade do solo,soil2024.csv,181857,2023-06-06 11:57:15.025000-03:00,2024-09-23 10:27:31.453000-03:00,10.02,16.67,10.02,2.82,380743.25
