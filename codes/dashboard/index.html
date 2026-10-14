@@ -1,0 +1,2080 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel SIT · Estação 01</title>
+<meta name="description" content="Painel da estação SIT: solo, ar, bomba e sinal Wi-Fi, recebidos por MQTT (Wi-Fi) ou pela USB (Web Serial).">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='18.5' r='12' fill='%23D2452C'/%3E%3Cpath d='M16 5.5v5M9.5 9.5c3 2.6 10 2.6 13 0' stroke='%232E7D32' stroke-width='3' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<script>
+  // mqtt.js 5.10.1: tenta o jsDelivr; se falhar, o unpkg. Sem internet o painel segue funcionando pela USB.
+  window.__mqttReserva = function () {
+    var s = document.createElement('script');
+    s.src = 'https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js';
+    s.onerror = function () { window.__mqttFalhou = true; };
+    document.head.appendChild(s);
+  };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js" onerror="__mqttReserva()"></script>
+<style>
+:root {
+  /* identidade (contrato, seção 8) */
+  --amarelo: #F5C400;
+  --amarelo-esc: #C99700;
+  --tinta: #1E1B16;
+  --creme: #FBF6E6;
+  --tomate: #D2452C;
+  --folha: #2E7D32;
+  /* derivados */
+  --tinta-2: #5C5446;
+  --tinta-3: #7A705E;
+  --cartao: #FFFDF7;
+  --borda: #EADFC0;
+  --grade: #EFE6CD;
+  --ideal-bg: rgba(46, 125, 50, .13);
+  --atencao-bg: rgba(245, 196, 0, .32);
+  --alerta-bg: rgba(210, 69, 44, .14);
+  --sombra: 0 1px 0 rgba(30, 27, 22, .04), 0 10px 24px -18px rgba(30, 27, 22, .35);
+  --raio: 16px;
+  --fonte: "Space Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--creme); color: var(--tinta); font-family: var(--fonte); font-size: 15px; line-height: 1.45; }
+button, input { font: inherit; color: inherit; }
+code { font-family: var(--mono); font-size: .92em; }
+[hidden] { display: none !important; }
+
+/* ---------- topo ---------- */
+.topo { background: var(--amarelo); border-bottom: 2px solid var(--tinta); }
+.topo-in { max-width: 1440px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; }
+.marca { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.logo { width: 46px; height: 46px; flex: none; }
+.marca h1 { margin: 0; font-size: 24px; line-height: 1.1; font-weight: 700; letter-spacing: -.015em; }
+.marca p { margin: 2px 0 0; font-size: 13.5px; color: #3A3326; }
+.topo-dir { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; }
+.ao-vivo { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: var(--tinta); color: var(--creme); font-weight: 600; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
+.ao-vivo .ponto { background: #8d8471; }
+.ao-vivo.on .ponto { background: #6CCB5F; animation: pulsa-claro 1.8s ease-out infinite; }
+.relogio { font-weight: 600; font-size: 15px; color: #3A3326; font-variant-numeric: tabular-nums; }
+.faixa-teste { background: repeating-linear-gradient(135deg, #1E1B16 0 16px, #2E2A21 16px 32px); color: var(--amarelo); text-align: center; font-weight: 700; letter-spacing: .03em; padding: 9px 16px; font-size: 14.5px; }
+.faixa-teste code { color: var(--creme); font-weight: 600; }
+
+/* ---------- grade principal ---------- */
+.painel { max-width: 1440px; margin: 0 auto; padding: 18px 24px 36px; display: grid; gap: 16px; }
+.cartao { background: var(--cartao); border: 1px solid var(--borda); border-radius: var(--raio); box-shadow: var(--sombra); padding: 16px 18px; min-width: 0; }
+h2 { font-size: 16px; margin: 0; font-weight: 700; letter-spacing: -.01em; }
+
+/* ---------- barra de fontes ---------- */
+.barra { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.barra-fonte { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; min-width: 0; }
+.barra-rot { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--tinta-2); }
+.barra-ativa { margin: 0; font-size: 14.5px; color: var(--tinta-2); min-width: 0; flex: 1 1 320px; }
+.barra-ativa b { color: var(--tinta); }
+.barra-canais { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.seg { display: inline-flex; border: 1.5px solid var(--tinta); border-radius: 999px; padding: 3px; background: var(--cartao); gap: 2px; flex-wrap: wrap; }
+.seg button { border: 0; background: transparent; font-weight: 600; font-size: 14px; padding: 7px 14px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+.seg button:hover { background: #FFF3C4; }
+.seg button[aria-pressed="true"] { background: var(--tinta); color: var(--amarelo); }
+.seg.peq button { font-size: 13px; padding: 4px 11px; }
+.canal { display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 12px; border: 1px solid var(--borda); border-radius: 12px; background: #FFFEFA; min-width: 0; }
+.canal.ativo { border-color: var(--tinta); box-shadow: inset 0 0 0 1px var(--tinta); background: #FFF8DC; }
+.canal-txt { display: grid; min-width: 0; line-height: 1.3; flex: 1 1 auto; }
+.canal-txt b { font-size: 14px; }
+.canal-txt small { font-family: var(--mono); font-size: 11.5px; color: var(--tinta-3); overflow-wrap: anywhere; }
+.canal .tag-ativo { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; background: var(--tinta); color: var(--amarelo); border-radius: 6px; padding: 1px 6px; margin-left: 6px; }
+.ponto { width: 10px; height: 10px; border-radius: 50%; background: #C2B796; flex: none; display: inline-block; }
+.ponto.ok { background: var(--folha); }
+.ponto.espera { background: var(--amarelo-esc); }
+.ponto.erro { background: var(--tomate); }
+.ponto.pulsa { animation: pulsa 1.8s ease-out infinite; }
+@keyframes pulsa { 0% { box-shadow: 0 0 0 0 rgba(46, 125, 50, .45); } 100% { box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); } }
+@keyframes pulsa-claro { 0% { box-shadow: 0 0 0 0 rgba(108, 203, 95, .6); } 100% { box-shadow: 0 0 0 9px rgba(108, 203, 95, 0); } }
+
+/* ---------- botões ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-size: 14px; padding: 8px 14px; border-radius: 10px; border: 1.5px solid var(--tinta); background: var(--cartao); cursor: pointer; white-space: nowrap; }
+.btn:hover { background: #FFF3C4; }
+.btn.prim { background: var(--amarelo); }
+.btn.prim:hover { background: #FFD21F; }
+.btn.peq { font-size: 13px; padding: 5px 11px; border-radius: 9px; }
+.btn.sutil { border-color: var(--borda); color: var(--tinta-2); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn:focus-visible, .seg button:focus-visible, .abas button:focus-visible, figure.graf:focus-visible, input:focus-visible { outline: 3px solid var(--tinta); outline-offset: 2px; }
+.check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--tinta-2); cursor: pointer; }
+.check input { accent-color: var(--tinta); width: 16px; height: 16px; }
+.check:has(input:disabled) { opacity: .5; cursor: not-allowed; }
+
+/* ---------- cartões de valor ---------- */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.kpi { display: flex; flex-direction: column; gap: 6px; position: relative; }
+.kpi-solo, .kpi-bomba { grid-column: span 2; }
+.kpi-rotulo { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13.5px; font-weight: 600; color: var(--tinta-2); }
+.kpi-via { font-size: 12px; font-weight: 500; color: var(--tinta-3); text-align: right; }
+.kpi-valor { font-size: 42px; font-weight: 600; line-height: 1.05; letter-spacing: -.025em; margin: 2px 0; white-space: nowrap; }
+.kpi-solo .kpi-valor { font-size: 64px; }
+.kpi-valor .un { font-size: .45em; font-weight: 500; color: var(--tinta-2); margin-left: 6px; letter-spacing: 0; }
+.kpi-sub { font-size: 13px; color: var(--tinta-2); }
+.kpi-linha { display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap; }
+.kpi-linha .zonas { flex: 1 1 220px; margin-bottom: 8px; }
+.kpi-status { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; }
+.kpi-faixa { font-size: 12.5px; color: var(--tinta-3); }
+.kpi.velho .kpi-valor { color: var(--tinta-3); }
+.kpi.flash { animation: flash 1.4s ease-out; }
+@keyframes flash { 0% { background: #FFF0B0; } 100% { background: var(--cartao); } }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 3px 11px 3px 5px; border-radius: 999px; background: #F0EADA; color: var(--tinta); }
+.chip svg { width: 17px; height: 17px; flex: none; }
+.chip.ideal { background: var(--ideal-bg); }
+.chip.atencao { background: var(--atencao-bg); }
+.chip.alerta { background: var(--alerta-bg); }
+.zonas { position: relative; padding-top: 4px; }
+.zonas-barra { display: flex; height: 10px; border-radius: 999px; overflow: hidden; gap: 2px; background: var(--cartao); }
+.zonas-barra span { display: block; height: 100%; }
+.zonas-barra .z-ideal { background: rgba(46, 125, 50, .42); }
+.zonas-barra .z-atencao { background: rgba(245, 196, 0, .62); }
+.zonas-barra .z-alerta { background: rgba(210, 69, 44, .40); }
+.zonas-marca { position: absolute; top: -2px; width: 4px; height: 22px; margin-left: -2px; background: var(--tinta); border-radius: 2px; box-shadow: 0 0 0 2px var(--cartao); transition: left .5s ease; }
+.zonas-rot { position: relative; height: 15px; margin-top: 3px; font-size: 11px; color: var(--tinta-3); font-variant-numeric: tabular-nums; }
+.zonas-rot span { position: absolute; transform: translateX(-50%); }
+.kpi-estado { font-size: 32px; display: flex; align-items: center; gap: 12px; }
+.kpi-estado .ponto { width: 16px; height: 16px; }
+.canais-lista { list-style: none; margin: 2px 0 0; padding: 0; display: grid; gap: 4px; font-size: 13px; color: var(--tinta-2); }
+.canais-lista li { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.canais-lista b { color: var(--tinta); font-weight: 600; white-space: nowrap; }
+.barras { width: 26px; height: 19px; flex: none; }
+.barras rect { fill: #E4DABE; }
+.barras rect.on { fill: var(--tinta); }
+.bomba-grade { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 16px; align-items: start; }
+.bomba-estado { display: inline-flex; align-items: center; gap: 10px; }
+.bomba-estado.ligada { background: var(--amarelo); border: 1.5px solid var(--tinta); border-radius: 12px; padding: 2px 14px 2px 10px; }
+.bomba-estado .gota-ico { width: 24px; height: 24px; }
+.bomba-estado.ligada .gota-ico { animation: pinga .9s ease-in-out infinite alternate; }
+@keyframes pinga { from { transform: translateY(-2px); } to { transform: translateY(2px); } }
+.irrigar { display: grid; gap: 8px; background: #FFF8DC; border: 1px solid var(--borda); border-radius: 12px; padding: 12px; }
+.irrigar label { font-size: 13px; font-weight: 600; color: var(--tinta-2); }
+.irrigar-linha { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.irrigar input[type=number] { width: 74px; padding: 7px 8px; border: 1.5px solid var(--tinta); border-radius: 10px; background: var(--cartao); font-weight: 600; font-size: 16px; text-align: center; }
+.irrigar-via { margin: 0; font-size: 12.5px; color: var(--tinta-2); overflow-wrap: anywhere; }
+.irrigar-via code { font-size: 11.5px; }
+.nota { margin: 0; font-size: 12.5px; color: var(--tinta-3); }
+
+/* ---------- gráficos ---------- */
+.graf-topo { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 8px; }
+.abas { display: inline-flex; gap: 4px; background: #F3ECD8; padding: 3px; border-radius: 12px; }
+.abas button { border: 0; background: transparent; font-weight: 600; font-size: 14px; padding: 6px 13px; border-radius: 9px; cursor: pointer; color: var(--tinta-2); }
+.abas button[aria-selected="true"] { background: var(--cartao); color: var(--tinta); box-shadow: 0 1px 0 rgba(30, 27, 22, .12), 0 0 0 1px var(--borda); }
+.graf-acoes { display: flex; gap: 8px 12px; flex-wrap: wrap; align-items: center; margin-left: auto; }
+.graf-info { margin: 0 0 8px; font-size: 13px; color: var(--tinta-2); }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 12.5px; color: var(--tinta-2); margin: 0 0 12px; }
+.legenda b { color: var(--tinta); font-weight: 600; }
+.legenda .it { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 18px; height: 11px; border-radius: 3px; display: inline-block; }
+.sw-ideal { background: rgba(46, 125, 50, .30); }
+.sw-atencao { background: rgba(245, 196, 0, .48); }
+.sw-alerta { background: rgba(210, 69, 44, .28); }
+.sw-linha { width: 18px; height: 2px; background: var(--tinta); border-radius: 1px; }
+.grade-graf { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+figure.graf { margin: 0; position: relative; border: 1px solid var(--borda); border-radius: 12px; padding: 10px 10px 4px; background: var(--cartao); min-width: 0; }
+figure.graf figcaption { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 0 4px 4px; flex-wrap: wrap; }
+figure.graf figcaption b { font-size: 14.5px; }
+figure.graf figcaption span { font-size: 12px; color: var(--tinta-3); }
+figure.graf svg { display: block; width: 100%; height: 210px; touch-action: pan-y; }
+.graf.carregando svg { opacity: .55; }
+.fx-ideal { fill: rgba(46, 125, 50, .12); }
+.fx-atencao { fill: rgba(245, 196, 0, .20); }
+.fx-alerta { fill: rgba(210, 69, 44, .11); }
+.l-grade { stroke: rgba(30, 27, 22, .09); stroke-width: 1; shape-rendering: crispEdges; }
+.l-base, .l-tick { stroke: #CDBF98; stroke-width: 1; shape-rendering: crispEdges; }
+.t-eixo { fill: var(--tinta-3); font-size: 11px; font-variant-numeric: tabular-nums; font-family: var(--fonte); }
+.serie { fill: none; stroke: var(--tinta); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.pt { fill: var(--tinta); stroke: var(--cartao); stroke-width: 1.5; }
+.fim { stroke: var(--cartao); stroke-width: 2; }
+.fim-ideal { fill: var(--folha); }
+.fim-atencao { fill: var(--amarelo-esc); }
+.fim-alerta { fill: var(--tomate); }
+.fim-nd, .fim-neutro { fill: var(--tinta); }
+.t-fim { font-size: 12px; font-weight: 700; fill: var(--tinta); font-family: var(--fonte); }
+.rega { stroke: var(--tinta); stroke-opacity: .5; stroke-width: 1; }
+.gota { fill: var(--tinta); }
+.mira { stroke: var(--tinta); stroke-opacity: .55; stroke-width: 1; }
+.mira-pt { fill: var(--tinta); stroke: var(--cartao); stroke-width: 2; }
+.t-vazio { fill: var(--tinta-3); font-size: 13px; font-family: var(--fonte); }
+.dica { position: absolute; z-index: 5; pointer-events: none; background: var(--tinta); color: var(--creme); border-radius: 10px; padding: 8px 11px; font-size: 12.5px; line-height: 1.35; display: grid; gap: 1px; min-width: 120px; box-shadow: 0 8px 20px -10px rgba(0, 0, 0, .5); }
+.dica strong { font-size: 16px; color: #FFFFFF; }
+.dica span { color: #E9E1CB; white-space: nowrap; }
+.tabela-wrap { margin-top: 14px; border-top: 1px solid var(--borda); padding-top: 12px; }
+.tabela-topo { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 8px; font-size: 13px; color: var(--tinta-2); }
+.tabela-topo .esp { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+.tabela-rolagem { max-height: 320px; overflow: auto; border: 1px solid var(--borda); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 6px 10px; border-bottom: 1px solid var(--grade); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+th:first-child, td:first-child, th:last-child, td:last-child { text-align: left; }
+thead th { position: sticky; top: 0; background: #F6F0DE; font-weight: 600; color: var(--tinta-2); }
+
+/* ---------- logs ---------- */
+.logs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.log-topo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.log-cont { font-size: 12.5px; color: var(--tinta-3); }
+.log-topo .btn { margin-left: auto; }
+.log-sub { margin: 4px 0 10px; font-size: 12.5px; color: var(--tinta-2); overflow-wrap: anywhere; }
+.log-lista { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow: auto; border: 1px solid var(--borda); border-radius: 10px; background: #FFFEFA; }
+.log-lista li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 10px; padding: 7px 10px; border-bottom: 1px solid var(--grade); font-size: 12.5px; }
+.log-lista li:last-child { border-bottom: 0; }
+.log-lista li.novo { animation: flash 1.4s ease-out; }
+.log-lista time { font-family: var(--mono); color: var(--tinta-3); font-size: 12px; padding-top: 1px; font-variant-numeric: tabular-nums; }
+.log-lista .cab { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; min-width: 0; }
+.log-lista .topico { font-family: var(--mono); font-weight: 600; color: var(--tinta); overflow-wrap: anywhere; }
+.log-lista .topico .base { color: var(--tinta-3); font-weight: 400; }
+.log-lista .payload { display: block; color: var(--tinta-2); overflow-wrap: anywhere; white-space: pre-wrap; margin-top: 2px; }
+.log-lista li.sis { color: var(--tinta-3); font-style: italic; }
+.log-lista li.sis .payload { color: var(--tinta-3); margin: 0; }
+.log-lista li.l-boot .payload { color: var(--tinta-3); }
+.log-vazio { padding: 14px; color: var(--tinta-3); font-size: 13px; }
+.tag { font-family: var(--fonte); font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: #EFE8D4; color: var(--tinta); white-space: nowrap; font-style: normal; }
+.tag.t-ok { background: var(--ideal-bg); }
+.tag.t-erro { background: var(--alerta-bg); }
+.tag.t-bomba { background: var(--amarelo); }
+.tag.t-cmd { background: var(--tinta); color: var(--amarelo); }
+.tag.t-ret { background: transparent; border: 1px solid var(--borda); color: var(--tinta-2); }
+.tag.t-aviso { background: var(--atencao-bg); }
+
+/* ---------- faixas e ajuda ---------- */
+.info { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 16px; }
+.faixas-tab td, .faixas-tab th { text-align: left; white-space: normal; vertical-align: top; }
+.faixas-tab td:first-child { font-weight: 600; }
+.faixas-tab td:nth-child(2) { white-space: nowrap; }
+.faixas-tab .chip { font-size: 12px; }
+.ajuda { font-size: 13.5px; color: var(--tinta-2); }
+.ajuda ul { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+.ajuda b { color: var(--tinta); }
+.rodape { max-width: 1440px; margin: 0 auto; padding: 0 24px 28px; font-size: 12.5px; color: var(--tinta-3); }
+
+/* ---------- avisos ---------- */
+.toasts { position: fixed; right: 16px; bottom: 16px; display: grid; gap: 8px; z-index: 50; width: min(400px, calc(100vw - 32px)); }
+.toast { background: var(--tinta); color: var(--creme); padding: 10px 14px; border-radius: 12px; font-size: 14px; border-left: 5px solid var(--amarelo); box-shadow: 0 12px 28px -14px rgba(0, 0, 0, .55); transition: opacity .35s, transform .35s; }
+.toast.ok { border-left-color: #6CCB5F; }
+.toast.erro { border-left-color: #F07A62; }
+.toast.sai { opacity: 0; transform: translateY(6px); }
+
+/* ---------- responsivo ---------- */
+@media (max-width: 1180px) {
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .grade-graf, .logs, .info, .barra-canais { grid-template-columns: 1fr; }
+  .bomba-grade { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .topo-in, .painel, .rodape { padding-left: 16px; padding-right: 16px; }
+  .kpis { grid-template-columns: 1fr; }
+  .kpi-solo, .kpi-bomba { grid-column: auto; }
+  .kpi-solo .kpi-valor { font-size: 52px; }
+  .kpi-valor { font-size: 38px; }
+  .marca h1 { font-size: 20px; }
+  .canal { width: 100%; }
+  .graf-acoes { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="topo-in">
+    <div class="marca">
+      <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+        <circle cx="24" cy="27.5" r="17" fill="#D2452C" stroke="#1E1B16" stroke-width="2"/>
+        <ellipse cx="16.5" cy="23" rx="3" ry="5.5" fill="#FFFFFF" opacity=".28" transform="rotate(28 16.5 23)"/>
+        <path d="M24 11.5c-2 2.8-5.6 4-9.6 3.4 2.6 2.6 6.4 3.2 9.6 1.6 3.2 1.6 7 1 9.6-1.6-4 .6-7.6-.6-9.6-3.4z" fill="#2E7D32" stroke="#1E1B16" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M24 11.5V5.5" stroke="#1E1B16" stroke-width="2.2" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <h1>SIT · Estação 01</h1>
+        <p>Sistema IoT de Irrigação Inteligente para Cultivo de Tomate</p>
+      </div>
+    </div>
+    <div class="topo-dir">
+      <span class="ao-vivo" id="aoVivo"><span class="ponto"></span><span id="aoVivoTxt">sem dados</span></span>
+      <span class="relogio" id="relogio">--:--:--</span>
+    </div>
+  </div>
+</header>
+<div class="faixa-teste" id="faixaTeste" hidden>MODO TESTE · DADOS DE TESTE do tópico <code id="faixaTesteBase"></code> · não é a estação real</div>
+
+<main class="painel">
+
+  <section class="cartao barra" aria-label="Fonte de dados e conexões">
+    <div class="barra-fonte">
+      <span class="barra-rot">Fonte</span>
+      <div class="seg" id="segFonte" role="group" aria-label="Escolher a fonte de dados">
+        <button type="button" data-fonte="auto" aria-pressed="true" title="Usa o MQTT; se ficar 90 s sem leitura e a USB estiver aberta, mostra a USB">AUTO</button>
+        <button type="button" data-fonte="mqtt" aria-pressed="false" title="Só o MQTT (Wi-Fi)">Wi-Fi · MQTT</button>
+        <button type="button" data-fonte="usb" aria-pressed="false" title="Só a USB (cabo, Web Serial)">Cabo · USB</button>
+      </div>
+      <p class="barra-ativa" id="fonteAtiva">Carregando…</p>
+    </div>
+    <div class="barra-canais">
+      <div class="canal" id="canalMqtt">
+        <span class="ponto"></span>
+        <div class="canal-txt"><span><b>MQTT</b> <span id="mqttEstado">iniciando</span></span><small id="mqttDetalhe"></small></div>
+        <button class="btn peq" id="btnMqtt" type="button">Conectar</button>
+      </div>
+      <div class="canal" id="canalUsb">
+        <span class="ponto"></span>
+        <div class="canal-txt"><span><b>USB</b> <span id="usbEstado">porta fechada</span></span><small id="usbDetalhe">Web Serial · 115200 baud</small></div>
+        <button class="btn peq" id="btnUsb" type="button">Conectar USB</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="kpis" aria-label="Valores atuais">
+    <article class="cartao kpi kpi-solo" id="kSolo">
+      <div class="kpi-rotulo"><span>Umidade do solo (vaso)</span><span class="kpi-via" id="kSoloVia">sem leitura</span></div>
+      <div class="kpi-linha">
+        <div class="kpi-valor"><span id="kSoloValor">–</span><span class="un">%</span></div>
+        <div class="zonas" id="kSoloZonas" aria-hidden="true"></div>
+      </div>
+      <div class="kpi-sub" id="kSoloBruto">valor bruto –</div>
+      <div class="kpi-status"><span class="chip" id="kSoloChip">sem dado</span><span class="kpi-faixa">ideal 50 a 80 % · alerta abaixo de 40 ou acima de 90</span></div>
+    </article>
+    <article class="cartao kpi" id="kTemp">
+      <div class="kpi-rotulo"><span>Temperatura do ar</span><span class="kpi-via" id="kTempVia"></span></div>
+      <div class="kpi-valor"><span id="kTempValor">–</span><span class="un">°C</span></div>
+      <div class="zonas" id="kTempZonas" aria-hidden="true"></div>
+      <div class="kpi-status"><span class="chip" id="kTempChip">sem dado</span></div>
+      <div class="kpi-faixa">ideal 20 a 30 °C · alerta abaixo de 10 ou acima de 35</div>
+    </article>
+    <article class="cartao kpi" id="kUmid">
+      <div class="kpi-rotulo"><span>Umidade do ar</span><span class="kpi-via" id="kUmidVia"></span></div>
+      <div class="kpi-valor"><span id="kUmidValor">–</span><span class="un">%</span></div>
+      <div class="zonas" id="kUmidZonas" aria-hidden="true"></div>
+      <div class="kpi-status"><span class="chip" id="kUmidChip">sem dado</span></div>
+      <div class="kpi-faixa">ideal 60 a 80 % · alerta abaixo de 40 ou acima de 90</div>
+    </article>
+
+    <article class="cartao kpi" id="kEstacao">
+      <div class="kpi-rotulo"><span>Estação</span><span class="kpi-via">tópico status, com last will</span></div>
+      <div class="kpi-valor kpi-estado" id="kEstacaoValor"><span class="ponto"></span><span>–</span></div>
+      <ul class="canais-lista">
+        <li id="kEstMqtt"><span class="ponto"></span><b>Wi-Fi/MQTT</b><span>–</span></li>
+        <li id="kEstUsb"><span class="ponto"></span><b>Cabo/USB</b><span>–</span></li>
+      </ul>
+      <div class="kpi-sub" id="kEstacaoSub"></div>
+    </article>
+    <article class="cartao kpi" id="kRssi">
+      <div class="kpi-rotulo"><span>Sinal Wi-Fi (RSSI)</span><span class="kpi-via" id="kRssiVia"></span></div>
+      <div class="kpi-valor"><span id="kRssiValor">–</span><span class="un">dBm</span></div>
+      <div class="kpi-status">
+        <svg class="barras" id="kRssiBarras" viewBox="0 0 26 19" aria-hidden="true"><rect x="0" y="13" width="5" height="6" rx="1.2"/><rect x="7" y="9" width="5" height="10" rx="1.2"/><rect x="14" y="5" width="5" height="14" rx="1.2"/><rect x="21" y="0" width="5" height="19" rx="1.2"/></svg>
+        <span class="chip" id="kRssiTexto">sem dado</span>
+      </div>
+      <div class="kpi-sub">Medido pela ESP32. Valor 0 indica estação sem Wi-Fi.</div>
+    </article>
+    <article class="cartao kpi kpi-bomba" id="kBomba">
+      <div class="kpi-rotulo"><span>Bomba de irrigação</span><span class="kpi-via" id="kBombaVia"></span></div>
+      <div class="bomba-grade">
+        <div>
+          <div class="kpi-valor kpi-estado"><span class="bomba-estado" id="kBombaEstado"><svg class="gota-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C12 2.5 5 10.4 5 14.6a7 7 0 0 0 14 0C19 10.4 12 2.5 12 2.5z" fill="#1E1B16"/><path d="M9 15.5a3.2 3.2 0 0 0 2.6 3" stroke="#FFFDF7" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><span id="kBombaValor">–</span></span></div>
+          <div class="kpi-sub" id="kBombaSub">sem informação ainda</div>
+          <div class="kpi-sub" id="kBombaUlt">última rega: nenhuma nesta sessão</div>
+        </div>
+        <form class="irrigar" id="formIrrigar" autocomplete="off">
+          <label for="segundos">Irrigação manual · segundos (1 a 5)</label>
+          <div class="irrigar-linha">
+            <input id="segundos" type="number" min="1" max="5" step="1" value="1" inputmode="numeric" aria-describedby="irrigarVia">
+            <button class="btn prim" id="btnIrrigar" type="submit">Irrigar 1 s</button>
+            <button class="btn" id="btnParar" type="button" title="Envia 0: desliga a bomba">Parar</button>
+          </div>
+          <p class="irrigar-via" id="irrigarVia">–</p>
+        </form>
+      </div>
+      <p class="nota" id="notaBomba">Liga a bomba de verdade. O firmware limita cada acionamento a 5 s.</p>
+    </article>
+  </section>
+
+  <section class="cartao graficos" aria-label="Gráficos">
+    <div class="graf-topo">
+      <div class="abas" role="tablist" aria-label="Dados dos gráficos">
+        <button type="button" role="tab" id="abaSessao" aria-selected="true">Sessão ao vivo</button>
+        <button type="button" role="tab" id="abaHist" aria-selected="false">Histórico (CSV)</button>
+      </div>
+      <div class="seg peq" id="segJanela" role="group" aria-label="Intervalo de tempo">
+        <button type="button" data-janela="900000" aria-pressed="false">15 min</button>
+        <button type="button" data-janela="3600000" aria-pressed="true">1 h</button>
+        <button type="button" data-janela="21600000" aria-pressed="false">6 h</button>
+        <button type="button" data-janela="0" aria-pressed="false">tudo</button>
+      </div>
+      <div class="graf-acoes">
+        <button class="btn peq" id="btnCsv" type="button" title="Escolha outputs/coleta/leituras.csv e eventos.csv (os dois juntos)">Carregar CSV…</button>
+        <label class="check" title="Relê o arquivo a cada 15 s (precisa do seletor de arquivos do Chrome)"><input type="checkbox" id="chkAcompanhar" disabled> acompanhar arquivo</label>
+        <button class="btn peq" id="btnTabela" type="button" aria-pressed="false">Ver tabela</button>
+      </div>
+    </div>
+    <p class="graf-info" id="grafInfo">Sessão ao vivo: leituras recebidas desde que o painel foi aberto.</p>
+    <div class="legenda">
+      <b>Faixas do tomateiro</b>
+      <span class="it"><span class="sw sw-ideal"></span>ideal</span>
+      <span class="it"><span class="sw sw-atencao"></span>atenção</span>
+      <span class="it"><span class="sw sw-alerta"></span>alerta</span>
+      <span class="it"><svg width="12" height="14" viewBox="0 0 12 14" aria-hidden="true"><path d="M6 1C6 1 1.5 6.2 1.5 8.9a4.5 4.5 0 0 0 9 0C10.5 6.2 6 1 6 1z" fill="#1E1B16"/></svg>rega (bomba ligada)</span>
+      <span class="it"><span class="sw sw-linha"></span>leituras (a cada 30 s)</span>
+    </div>
+    <div class="grade-graf" id="gradeGraf">
+      <figure class="graf" id="gSolo" tabindex="0"><figcaption><b>Umidade do solo</b><span>% relativo (0 = ar, 100 = água)</span></figcaption><svg role="img" aria-label="Umidade do solo"></svg><div class="dica" hidden></div></figure>
+      <figure class="graf" id="gTemp" tabindex="0"><figcaption><b>Temperatura do ar</b><span>°C · AM2302</span></figcaption><svg role="img" aria-label="Temperatura do ar"></svg><div class="dica" hidden></div></figure>
+      <figure class="graf" id="gUmid" tabindex="0"><figcaption><b>Umidade do ar</b><span>% · AM2302</span></figcaption><svg role="img" aria-label="Umidade do ar"></svg><div class="dica" hidden></div></figure>
+      <figure class="graf" id="gRssi" tabindex="0"><figcaption><b>Sinal Wi-Fi da estação</b><span>RSSI em dBm (sem faixas)</span></figcaption><svg role="img" aria-label="Sinal Wi-Fi"></svg><div class="dica" hidden></div></figure>
+    </div>
+    <div class="tabela-wrap" id="tabelaWrap" hidden>
+      <div class="tabela-topo">
+        <span id="tabelaInfo"></span>
+        <span class="esp">
+          <button class="btn peq" id="btnExpLeit" type="button" title="Mesmo formato do outputs/coleta/leituras.csv">Exportar leituras da sessão</button>
+          <button class="btn peq" id="btnExpEv" type="button" title="Mesmo formato do outputs/coleta/eventos.csv">Exportar regas da sessão</button>
+          <button class="btn peq sutil" id="btnLimparSessao" type="button">Limpar sessão</button>
+        </span>
+      </div>
+      <div class="tabela-rolagem">
+        <table>
+          <thead><tr><th>Hora</th><th>Solo %</th><th>Bruto</th><th>Temp °C</th><th>Umid ar %</th><th>RSSI</th><th>Via</th></tr></thead>
+          <tbody id="tabelaCorpo"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="logs" aria-label="Mensagens recebidas">
+    <article class="cartao">
+      <div class="log-topo"><h2>Mensagens MQTT recebidas</h2><span class="log-cont" id="contMqtt">0 mensagens</span><button class="btn peq sutil" type="button" data-limpar="logMqtt">Limpar</button></div>
+      <p class="log-sub">Assinatura <code id="rotAssinatura"></code> no broker público HiveMQ. Cada linha mostra o tópico e o payload, como chegaram.</p>
+      <ol class="log-lista" id="logMqtt"></ol>
+    </article>
+    <article class="cartao">
+      <div class="log-topo"><h2>Linhas da USB (Serial)</h2><span class="log-cont" id="contUsb">0 linhas</span><button class="btn peq sutil" type="button" data-limpar="logUsb">Limpar</button></div>
+      <p class="log-sub">O que a ESP32 imprime no cabo: o mesmo JSON do MQTT, as linhas da bomba e as mensagens de boot.</p>
+      <ol class="log-lista" id="logUsb"></ol>
+    </article>
+  </section>
+
+  <section class="info">
+    <article class="cartao">
+      <h2>Faixas do tomateiro</h2>
+      <p class="log-sub">Valores iniciais configuráveis (contrato, seção 7). Ainda não há planta: calibrar depois do plantio. O sensor de solo é relativo (0 % no ar, 100 % na água).</p>
+      <div class="tabela-rolagem">
+        <table class="faixas-tab">
+          <thead><tr><th>Variável</th><th>Ideal</th><th>Atenção</th><th>Alerta</th></tr></thead>
+          <tbody>
+            <tr><td>Umidade do solo</td><td>50 a 80 %</td><td>40 a 50 % e 80 a 90 %</td><td>abaixo de 40 % (seco) ou acima de 90 % (encharcado)</td></tr>
+            <tr><td>Temperatura do ar</td><td>20 a 30 °C</td><td>10 a 20 °C e 30 a 35 °C (pegamento de frutos cai acima de ~32 °C)</td><td>abaixo de 10 °C ou acima de 35 °C</td></tr>
+            <tr><td>Umidade do ar</td><td>60 a 80 %</td><td>40 a 60 % e 80 a 90 %</td><td>acima de 90 % (fungos) ou abaixo de 40 %</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+    <article class="cartao ajuda">
+      <h2>Como usar</h2>
+      <ul>
+        <li><b>AUTO</b> usa o MQTT. Se o MQTT ficar 90 s sem leitura (ou cair) e a USB estiver aberta, mostra a USB.</li>
+        <li><b>USB:</b> só um programa por vez abre a porta COM. Com o <code>coletor_serial.py</code> rodando (COM11), feche-o antes, ou fique no MQTT e no CSV.</li>
+        <li><b>Histórico:</b> "Carregar CSV…" e escolha <code>outputs/coleta/leituras.csv</code> e <code>eventos.csv</code> juntos.</li>
+        <li><b>Broker público:</b> qualquer pessoa pode ler e publicar nestes tópicos. A trava de 5 s do firmware limita a bomba.</li>
+      </ul>
+    </article>
+  </section>
+</main>
+
+<footer class="rodape">SIT · UFC · TI0179 Internet das Coisas + PI4 · painel v1 · tópico base <code id="rotBaseRodape"></code></footer>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<input type="file" id="arquivoCsv" accept=".csv,text/csv" multiple hidden>
+
+<script>
+(function () {
+'use strict';
+
+/* ======================================================================
+   Configuração
+   ====================================================================== */
+const BASE_REAL = 'sit/ufc-pi4/estacao01';
+const P = new URLSearchParams(location.search);
+
+function baseDaUrl() {
+  let b = (P.get('base') || BASE_REAL).trim().replace(/\/#$/, '').replace(/\/+$/, '');
+  if (!b || /[#+]/.test(b)) b = BASE_REAL;
+  return b;
+}
+
+const CFG = {
+  base: baseDaUrl(),
+  // 8884 (wss) é o padrão do contrato; a 8000 (ws) é a reserva para redes que bloqueiam a 8884
+  brokers: P.get('broker') ? [P.get('broker')] : ['wss://broker.hivemq.com:8884/mqtt', 'ws://broker.hivemq.com:8000/mqtt'],
+  limiteAutoMs: 90 * 1000,
+  bombaMaxS: 5,
+  maxPontos: 6000,
+  maxLog: 200,
+};
+CFG.teste = CFG.base !== BASE_REAL;
+
+// Faixas do tomateiro (contrato, seção 7)
+const FAIXAS = {
+  solo_pct:    { ideal: [50, 80], alerta: [40, 90], baixo: 'seco', alto: 'encharcado' },
+  temp_c:      { ideal: [20, 30], alerta: [10, 35], baixo: 'frio demais', alto: 'calor excessivo' },
+  umid_ar_pct: { ideal: [60, 80], alerta: [40, 90], baixo: 'ar seco', alto: 'risco de fungos' },
+};
+const ZONAS = { solo_pct: [0, 100], temp_c: [0, 45], umid_ar_pct: [0, 100] };
+const UN = { solo_pct: '%', temp_c: '°C', umid_ar_pct: '%', rssi: 'dBm' };
+
+function classificar(campo, v) {
+  const f = FAIXAS[campo];
+  if (!f || v == null || !Number.isFinite(v)) return { nivel: 'nd', texto: 'sem dado' };
+  if (v < f.alerta[0]) return { nivel: 'alerta', texto: 'alerta: ' + f.baixo };
+  if (v > f.alerta[1]) return { nivel: 'alerta', texto: 'alerta: ' + f.alto };
+  if (v < f.ideal[0]) return { nivel: 'atencao', texto: 'atenção: abaixo do ideal' };
+  if (v > f.ideal[1]) {
+    if (campo === 'temp_c' && v > 32) return { nivel: 'atencao', texto: 'atenção: pegamento de frutos cai' };
+    return { nivel: 'atencao', texto: 'atenção: acima do ideal' };
+  }
+  return { nivel: 'ideal', texto: 'ideal' };
+}
+
+/* ======================================================================
+   Estado
+   ====================================================================== */
+const S = {
+  fonte: 'auto',
+  mqtt: { estado: 'parado', cliente: null, manter: false, idx: 0, url: '', falhas: 0, conectouNesta: false, timer: null, erro: '',
+          desde: 0, ultLeitura: 0, ultMsg: 0, nMsgs: 0, status: null, statusRetido: false, statusEm: 0,
+          bomba: null, bombaEm: 0, bombaDur: null, bombaRetido: false, bombaPresumido: false },
+  usb: { estado: 'fechada', porta: null, leitor: null, manter: false, abrindo: false, timer: null, erro: '', info: '', abertaEm: 0,
+         ultLeitura: 0, ultLinha: 0, nLinhas: 0, wifi: null, mqttEstacao: null, reset: null,
+         bomba: null, bombaEm: 0, bombaDur: null, bombaRetido: false, bombaPresumido: false },
+  ult: { mqtt: null, usb: null },
+  pontos: [],
+  regas: [],
+  hist: { leituras: [], eventos: [], regas: [], nomes: {}, handles: [], timer: null, lidoEm: 0 },
+  aba: 'sessao',
+  janela: 3600e3,
+  tabela: false,
+  cmd: null,
+  ultimoCmd: null,
+  cmdEnviados: [],
+  efAnterior: null,
+};
+
+/* ======================================================================
+   Utilitários
+   ====================================================================== */
+const $ = (sel) => document.querySelector(sel);
+const nf1 = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const f2 = (n) => (Math.round(n * 10) / 10).toString();
+
+function num(x) {
+  if (x === null || x === undefined) return null;
+  if (typeof x === 'string') { x = x.trim(); if (x === '' || /^(null|nan|none)$/i.test(x)) return null; }
+  const n = Number(x);
+  return Number.isFinite(n) ? n : null;
+}
+function fmtV(campo, v) {
+  if (v == null || !Number.isFinite(v)) return '–';
+  if (campo === 'temp_c' || campo === 'umid_ar_pct') return nf1.format(v);
+  return String(Math.round(v));
+}
+function horaSeg(t) { return new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }); }
+function dataHoraSeg(t) { const d = new Date(t); return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) + ' ' + horaSeg(t); }
+function ha(t) {
+  if (!t) return 'nunca';
+  const s = Math.max(0, Math.round((Date.now() - t) / 1000));
+  if (s < 60) return `há ${s} s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `há ${m} min`;
+  const h = Math.floor(m / 60);
+  return `há ${h} h ${m % 60} min`;
+}
+function nomesVia(via) {
+  if (!via) return '–';
+  const n = [];
+  if (via.mqtt) n.push('MQTT');
+  if (via.usb) n.push('USB');
+  if (via.csv) n.push('CSV');
+  return n.join(' + ') || '–';
+}
+function isoLocal(t) {
+  const d = new Date(t), p = (x) => String(x).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+function hex4(n) { return n.toString(16).toUpperCase().padStart(4, '0'); }
+function clampSeg(v) { v = Math.round(Number(v)); if (!Number.isFinite(v)) v = 1; return Math.min(CFG.bombaMaxS, Math.max(1, v)); }
+
+const PREF = 'sit-painel:';
+function lerPref(k, padrao) { try { const v = localStorage.getItem(PREF + k); return v == null ? padrao : JSON.parse(v); } catch (e) { return padrao; } }
+function gravarPref(k, v) { try { localStorage.setItem(PREF + k, JSON.stringify(v)); } catch (e) { /* sem armazenamento: segue sem lembrar */ } }
+
+function toast(msg, tipo) {
+  const d = document.createElement('div');
+  d.className = 'toast ' + (tipo || '');
+  d.setAttribute('role', 'status');
+  d.textContent = msg;
+  $('#toasts').append(d);
+  while ($('#toasts').children.length > 4) $('#toasts').firstElementChild.remove();
+  setTimeout(() => { d.classList.add('sai'); setTimeout(() => d.remove(), 400); }, tipo === 'erro' ? 9000 : 5000);
+}
+
+const ICONES = {
+  ideal: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7.5" fill="#2E7D32"/><path d="M4.6 8.3l2.2 2.2 4.6-4.8" fill="none" stroke="#FFFDF7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  atencao: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.3 15.2 14.4H.8z" fill="#F5C400" stroke="#1E1B16" stroke-width="1.2" stroke-linejoin="round"/><path d="M8 5.8v4" stroke="#1E1B16" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="12.1" r="1" fill="#1E1B16"/></svg>',
+  alerta: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7.5" fill="#D2452C"/><path d="M8 4v5" stroke="#FFFDF7" stroke-width="1.9" stroke-linecap="round"/><circle cx="8" cy="11.6" r="1.1" fill="#FFFDF7"/></svg>',
+  nd: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.8" fill="none" stroke="#7A705E" stroke-width="1.5" stroke-dasharray="2.6 2"/></svg>',
+};
+function setChip(el, nivel, texto) {
+  el.className = 'chip ' + nivel;
+  el.innerHTML = ICONES[nivel] || ICONES.nd;   // ícones fixos, sem dado externo
+  el.append(document.createTextNode(texto));
+}
+function setPonto(el, cls, pulsa) {
+  el.className = 'ponto' + (cls ? ' ' + cls : '') + (pulsa ? ' pulsa' : '');
+}
+
+/* ======================================================================
+   Sessão (sobrevive a um F5; fica só neste navegador)
+   ====================================================================== */
+const CHAVE_SESSAO = 'sessao:' + CFG.base;
+let timerSalvar = null;
+function salvarSessao() {
+  gravarPref(CHAVE_SESSAO, { v: 1, salvoEm: Date.now(), pontos: S.pontos.slice(-2500), regas: S.regas.slice(-300) });
+}
+function salvarSessaoLogo() {
+  if (timerSalvar) return;
+  timerSalvar = setTimeout(() => { timerSalvar = null; salvarSessao(); }, 3000);
+}
+function restaurarSessao() {
+  const d = lerPref(CHAVE_SESSAO, null);
+  if (!d || d.v !== 1 || !Array.isArray(d.pontos)) return 0;
+  const limite = Date.now() - 24 * 3600e3;
+  S.pontos = d.pontos.filter((p) => p && Number.isFinite(p.t) && p.t > limite && p.via && typeof p.via === 'object');
+  S.regas = (Array.isArray(d.regas) ? d.regas : []).filter((r) => r && Number.isFinite(r.t) && r.t > limite && r.via);
+  return S.pontos.length;
+}
+
+/* ======================================================================
+   Leituras e eventos
+   ====================================================================== */
+function normalizar(obj, recebido) {
+  const ts = num(obj.ts);
+  const tsOk = ts != null && ts > 1.7e9 && ts < 4.1e9;   // sem NTP o firmware manda null
+  return {
+    t: tsOk ? ts * 1000 : recebido,   // como o graficos.py: hora do NTP quando existe, senão a chegada
+    recebido, ts: tsOk ? ts : null,
+    solo_bruto: num(obj.solo_bruto), solo_pct: num(obj.solo_pct),
+    temp_c: num(obj.temp_c), umid_ar_pct: num(obj.umid_ar_pct), rssi: num(obj.rssi),
+  };
+}
+
+// A mesma leitura chega pelo MQTT e pela USB (o firmware manda o mesmo JSON nos dois)
+function mesmaLeitura(a, b) {
+  if (a.solo_bruto !== b.solo_bruto || a.solo_pct !== b.solo_pct) return false;
+  if (a.ts != null && b.ts != null) return a.ts === b.ts;
+  return Math.abs(a.recebido - b.recebido) < 12000 && a.temp_c === b.temp_c && a.umid_ar_pct === b.umid_ar_pct && a.rssi === b.rssi;
+}
+
+function registrarLeitura(via, obj) {
+  const agora = Date.now();
+  const l = normalizar(obj, agora);
+  S[via].ultLeitura = agora;
+  let alvo = null;
+  for (let i = S.pontos.length - 1; i >= 0 && i >= S.pontos.length - 6; i--) {
+    const p = S.pontos[i];
+    if (!p.via[via] && mesmaLeitura(p, l)) { alvo = p; break; }
+  }
+  if (alvo) {
+    alvo.via[via] = true;
+  } else {
+    l.via = { [via]: true };
+    let i = S.pontos.length;
+    while (i > 0 && S.pontos[i - 1].t > l.t) i--;   // mantém a série em ordem de tempo
+    S.pontos.splice(i, 0, l);
+    if (S.pontos.length > CFG.maxPontos) S.pontos.splice(0, S.pontos.length - CFG.maxPontos);
+    alvo = l;
+  }
+  S.ult[via] = alvo;
+  salvarSessaoLogo();
+  if (fonteEfetiva() === via) piscar(['kSolo', 'kTemp', 'kUmid', 'kRssi']);
+  renderTudo();
+  agendarGraficos();
+}
+
+function registrarBomba(via, estado, op) {
+  op = op || {};
+  const agora = Date.now();
+  const c = S[via];
+  c.bomba = estado;
+  c.bombaEm = agora;
+  c.bombaRetido = !!op.retido;
+  c.bombaPresumido = !!op.presumido;
+  c.bombaDur = op.segundos != null ? op.segundos : (estado === 'ligada' && S.cmd && S.cmd.segundos > 0 ? S.cmd.segundos : null);
+  if (estado === 'ligada' && !op.retido) {
+    const ult = S.regas[S.regas.length - 1];
+    if (ult && Math.abs(ult.t - agora) < 10000) {
+      ult.via[via] = true;
+      if (c.bombaDur && !ult.segundos) ult.segundos = c.bombaDur;
+    } else {
+      S.regas.push({ t: agora, segundos: c.bombaDur, via: { [via]: true } });
+    }
+    salvarSessaoLogo();
+    agendarGraficos();
+  }
+  if (S.cmd && !op.retido && ((S.cmd.segundos > 0 && estado === 'ligada') || (S.cmd.segundos === 0 && estado === 'desligada'))) {
+    toast(estado === 'ligada'
+      ? `Bomba ligada${c.bombaDur ? ' por ' + c.bombaDur + ' s' : ''}: confirmado pela estação (${via === 'mqtt' ? 'MQTT' : 'USB'}).`
+      : `Bomba desligada: confirmado pela estação (${via === 'mqtt' ? 'MQTT' : 'USB'}).`, 'ok');
+    S.cmd = null;
+  }
+  renderTudo();
+}
+
+function fonteEfetiva() {
+  if (S.fonte === 'mqtt' || S.fonte === 'usb') return S.fonte;
+  const agora = Date.now();
+  const fresca = (v) => S.ult[v] && agora - S[v].ultLeitura < CFG.limiteAutoMs;
+  const usbAberta = S.usb.estado === 'aberta';
+  if (S.mqtt.estado === 'conectado' && fresca('mqtt')) return 'mqtt';
+  if (usbAberta && (fresca('usb') || S.mqtt.estado !== 'conectado')) return 'usb';
+  if (S.mqtt.ultLeitura || S.usb.ultLeitura) return S.mqtt.ultLeitura >= S.usb.ultLeitura ? 'mqtt' : 'usb';
+  return usbAberta && S.mqtt.estado !== 'conectado' ? 'usb' : 'mqtt';
+}
+
+function canalComando() {
+  const mqttOk = S.mqtt.estado === 'conectado' && !!S.mqtt.cliente;
+  const usbOk = S.usb.estado === 'aberta';
+  if (S.fonte === 'mqtt') return mqttOk ? 'mqtt' : null;
+  if (S.fonte === 'usb') return usbOk ? 'usb' : null;
+  const ef = fonteEfetiva();
+  if (ef === 'usb' && usbOk) return 'usb';
+  if (mqttOk && (S.mqtt.status !== 'offline' || !usbOk)) return 'mqtt';
+  if (usbOk) return 'usb';
+  return mqttOk ? 'mqtt' : null;
+}
+
+function piscar(ids) {
+  for (const id of ids) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+  }
+}
+
+/* ======================================================================
+   Comando da bomba
+   ====================================================================== */
+async function irrigar(segundos) {
+  if (!Number.isInteger(segundos) || segundos < 0 || segundos > CFG.bombaMaxS) { toast('Escolha de 1 a 5 segundos.', 'erro'); return; }
+  const canal = canalComando();
+  if (!canal) { toast('Sem canal para o comando: conecte o MQTT ou a USB.', 'erro'); return; }
+  const valor = String(segundos);
+  try {
+    if (canal === 'mqtt') {
+      const cli = S.mqtt.cliente;
+      await new Promise((ok, falha) => cli.publish(`${CFG.base}/bomba/cmd`, valor, { qos: 0, retain: false }, (e) => (e ? falha(e) : ok())));
+      S.cmdEnviados.push({ valor, em: Date.now() });
+      if (S.cmdEnviados.length > 10) S.cmdEnviados.shift();
+    } else {
+      await escreverSerial(valor + '\n');
+      logUsb('>> ' + valor + (segundos ? `   (pedido do painel: ligar a bomba ${segundos} s)` : '   (pedido do painel: desligar a bomba)'), 'enviado');
+    }
+  } catch (e) {
+    toast('Falha ao enviar o comando: ' + ((e && e.message) || e), 'erro');
+    return;
+  }
+  const em = Date.now();
+  S.cmd = { segundos, canal, em };
+  S.ultimoCmd = { segundos, canal, em };
+  toast(segundos
+    ? `Comando enviado: irrigar ${segundos} s (${canal === 'mqtt' ? 'MQTT' : 'USB'}). Aguardando a estação…`
+    : `Comando enviado: parar a bomba (${canal === 'mqtt' ? 'MQTT' : 'USB'}).`);
+  setTimeout(() => {
+    if (S.cmd && S.cmd.em === em) {
+      S.cmd = null;
+      toast('A estação não confirmou o comando em 8 s. Ela está ligada e conectada?', 'erro');
+      renderTudo();
+    }
+  }, 8000);
+  renderTudo();
+}
+
+/* ======================================================================
+   MQTT (mqtt.js via WebSocket)
+   ====================================================================== */
+function logSistemaMqtt(texto) { logLinha('#logMqtt', { sistema: texto }); }
+
+function esperarLibMqtt(cb) {
+  const t0 = Date.now();
+  (function verificar() {
+    if (window.mqtt && typeof window.mqtt.connect === 'function') return cb(true);
+    if (window.__mqttFalhou || Date.now() - t0 > 20000) return cb(false);
+    setTimeout(verificar, 150);
+  })();
+}
+
+function conectarMqtt() {
+  pararMqtt(false);
+  if (!(window.mqtt && window.mqtt.connect)) { S.mqtt.estado = 'sem-lib'; renderTudo(); return; }
+  S.mqtt.manter = true;
+  const url = CFG.brokers[S.mqtt.idx % CFG.brokers.length];
+  S.mqtt.url = url;
+  S.mqtt.estado = S.mqtt.falhas ? 'reconectando' : 'conectando';
+  S.mqtt.conectouNesta = false;
+  S.mqtt.erro = '';
+  logSistemaMqtt(`conectando a ${url} …`);
+  let c;
+  try {
+    c = window.mqtt.connect(url, {
+      clientId: 'sit-painel-' + Math.random().toString(16).slice(2, 10),
+      clean: true, keepalive: 30, connectTimeout: 8000, reconnectPeriod: 0, protocolVersion: 4,
+    });
+  } catch (e) {
+    S.mqtt.erro = (e && e.message) || String(e);
+    aoFecharMqtt(null, url);
+    return;
+  }
+  S.mqtt.cliente = c;
+  c.on('connect', () => {
+    if (S.mqtt.cliente !== c) return;
+    S.mqtt.estado = 'conectado';
+    S.mqtt.desde = Date.now();
+    S.mqtt.falhas = 0;
+    S.mqtt.conectouNesta = true;
+    gravarPref('brokerOk', url);
+    logSistemaMqtt(`conectado a ${url}`);
+    c.subscribe(`${CFG.base}/#`, { qos: 0 }, (err) => {
+      logSistemaMqtt(err ? `falha ao assinar: ${err.message}` : `assinado ${CFG.base}/# (aguardando a estação; a leitura sai a cada 30 s)`);
+    });
+    renderTudo();
+  });
+  c.on('message', (topico, payload, pacote) => {
+    if (S.mqtt.cliente !== c) return;
+    let texto;
+    try { texto = new TextDecoder().decode(payload); } catch (e) { texto = String(payload); }
+    tratarMqtt(topico, texto, !!(pacote && pacote.retain));
+  });
+  c.on('error', (e) => { if (S.mqtt.cliente === c) S.mqtt.erro = (e && e.message) || String(e); });
+  c.on('close', () => { if (S.mqtt.cliente === c) aoFecharMqtt(c, url); });
+}
+
+function aoFecharMqtt(c, url) {
+  const conectou = S.mqtt.conectouNesta;
+  S.mqtt.cliente = null;
+  if (c) { try { c.end(true); } catch (e) { /* já fechado */ } }
+  if (!S.mqtt.manter) { S.mqtt.estado = 'parado'; renderTudo(); return; }
+  S.mqtt.falhas++;
+  const trocar = !conectou || S.mqtt.falhas >= 2;
+  if (trocar && CFG.brokers.length > 1) S.mqtt.idx = (S.mqtt.idx + 1) % CFG.brokers.length;
+  S.mqtt.estado = 'reconectando';
+  const prox = CFG.brokers[S.mqtt.idx % CFG.brokers.length];
+  logSistemaMqtt(conectou
+    ? 'a conexão caiu; reconectando…'
+    : `sem resposta de ${url}${S.mqtt.erro ? ' (' + S.mqtt.erro + ')' : ''}; tentando ${prox}`);
+  clearTimeout(S.mqtt.timer);
+  S.mqtt.timer = setTimeout(conectarMqtt, conectou ? 2000 : 1200);
+  renderTudo();
+}
+
+function pararMqtt(manual) {
+  clearTimeout(S.mqtt.timer);
+  const c = S.mqtt.cliente;
+  S.mqtt.cliente = null;
+  if (c) { try { c.end(true); } catch (e) { /* ignora */ } }
+  if (manual) {
+    S.mqtt.manter = false;
+    S.mqtt.estado = 'parado';
+    logSistemaMqtt('desconectado pelo painel');
+    renderTudo();
+  }
+}
+
+function tratarMqtt(topico, texto, retido) {
+  const agora = Date.now();
+  S.mqtt.ultMsg = agora;
+  S.mqtt.nMsgs++;
+  const rel = topico.startsWith(CFG.base + '/') ? topico.slice(CFG.base.length + 1) : topico;
+  const tags = [];
+  if (retido) tags.push(['retida no broker', 't-ret']);
+  if (rel === 'leituras') {
+    let obj = null;
+    try { obj = JSON.parse(texto); } catch (e) { obj = null; }
+    if (obj && typeof obj === 'object' && 'solo_bruto' in obj) { registrarLeitura('mqtt', obj); tags.unshift(['leitura', 't-ok']); }
+    else tags.unshift(['JSON inválido', 't-aviso']);
+  } else if (rel === 'status') {
+    const v = texto.trim().toLowerCase();
+    const anterior = S.mqtt.status;
+    S.mqtt.status = v || null;
+    S.mqtt.statusRetido = retido;
+    S.mqtt.statusEm = agora;
+    if (v === 'online') tags.unshift(['online', 't-ok']);
+    else if (v === 'offline') tags.unshift(['offline (last will)', 't-erro']);
+    if (!retido && anterior && v && anterior !== v) toast(v === 'online' ? 'A estação voltou: online.' : 'A estação ficou offline (last will).', v === 'online' ? 'ok' : 'erro');
+  } else if (rel === 'bomba/estado') {
+    const v = texto.trim().toLowerCase();
+    if (v === 'ligada' || v === 'desligada') registrarBomba('mqtt', v, { retido });
+    tags.unshift(['bomba ' + (v || '?'), v === 'ligada' ? 't-bomba' : '']);
+  } else if (rel === 'bomba/cmd') {
+    const eco = S.cmdEnviados.some((c) => c.valor === texto.trim() && agora - c.em < 15000);
+    tags.unshift([eco ? 'comando enviado por este painel' : 'comando', 't-cmd']);
+  }
+  logLinha('#logMqtt', { topico, payload: texto, tags });
+  renderTudo();
+}
+
+/* ======================================================================
+   USB (Web Serial)
+   ====================================================================== */
+const temSerial = 'serial' in navigator;
+const NOMES_USB = { 0x303A: 'ESP32-S3 USB nativa', 0x10C4: 'CP210x', 0x1A86: 'CH34x' };
+
+function mensagemErroUsb(e) {
+  if (e && e.name === 'NetworkError') return 'Porta ocupada por outro programa (ex.: coletor_serial.py na COM11 ou o Monitor Serial do Arduino). Feche-o e tente de novo.';
+  if (e && e.name === 'SecurityError') return 'O navegador bloqueou a porta. Abra o painel no Chrome ou Edge, como arquivo (file://) ou em localhost.';
+  return (e && e.message) || String(e);
+}
+
+async function cliqueUsb() {
+  if (!temSerial) { toast('Este navegador não tem Web Serial. Use o Chrome ou o Edge no computador.', 'erro'); return; }
+  if (S.usb.manter) { await desconectarUsb(); return; }
+  let porta;
+  try {
+    porta = await navigator.serial.requestPort();
+  } catch (e) {
+    if (e && e.name !== 'NotFoundError') toast('Não deu para escolher a porta: ' + mensagemErroUsb(e), 'erro');
+    return;
+  }
+  await abrirPorta(porta, true);
+}
+
+async function abrirPorta(porta, manual) {
+  if (S.usb.abrindo) return false;
+  S.usb.abrindo = true;
+  S.usb.estado = 'abrindo';
+  renderTudo();
+  try {
+    await porta.open({ baudRate: 115200, bufferSize: 8192 });
+  } catch (e) {
+    if (!(e && e.name === 'InvalidStateError')) {   // InvalidState = já estava aberta por este painel
+      S.usb.abrindo = false;
+      S.usb.porta = porta;
+      S.usb.estado = e && e.name === 'NetworkError' ? 'ocupada' : 'erro';
+      S.usb.erro = mensagemErroUsb(e);
+      logUsb('não abriu: ' + S.usb.erro, 'aviso');
+      if (manual) toast(S.usb.erro, 'erro');
+      renderTudo();
+      return false;
+    }
+  }
+  S.usb.abrindo = false;
+  S.usb.porta = porta;
+  S.usb.manter = true;
+  S.usb.estado = 'aberta';
+  S.usb.erro = '';
+  S.usb.abertaEm = Date.now();
+  gravarPref('usbAuto', true);
+  const info = porta.getInfo ? porta.getInfo() : {};
+  S.usb.info = info.usbVendorId ? `VID ${hex4(info.usbVendorId)} PID ${hex4(info.usbProductId || 0)}${NOMES_USB[info.usbVendorId] ? ' · ' + NOMES_USB[info.usbVendorId] : ''}` : '';
+  logUsb('porta aberta a 115200 baud' + (S.usb.info ? ' · ' + S.usb.info : ''), 'sis');
+  if (manual) toast('USB conectada. As linhas da ESP32 aparecem no log da USB.', 'ok');
+  renderTudo();
+  lerSerial(porta);
+  return true;
+}
+
+async function lerSerial(porta) {
+  const dec = new TextDecoder();
+  let buf = '';
+  while (S.usb.manter && S.usb.porta === porta && porta.readable) {
+    let leitor;
+    try { leitor = porta.readable.getReader(); } catch (e) { break; }
+    S.usb.leitor = leitor;
+    let erro = false;
+    try {
+      for (;;) {
+        const { value, done } = await leitor.read();
+        if (done) break;
+        if (!value || !value.length) continue;
+        buf += dec.decode(value, { stream: true });
+        let i;
+        while ((i = buf.indexOf('\n')) >= 0) {
+          const linha = buf.slice(0, i);
+          buf = buf.slice(i + 1);
+          try { processarLinhaSerial(linha); } catch (err) { console.error(err); }
+        }
+        if (buf.length > 8192) buf = buf.slice(-2048);
+      }
+    } catch (e) {
+      erro = true;
+      logUsb('erro de leitura: ' + ((e && e.message) || (e && e.name) || e), 'aviso');
+    } finally {
+      try { leitor.releaseLock(); } catch (e) { /* ignora */ }
+      S.usb.leitor = null;
+    }
+    if (!S.usb.manter) break;
+    if (erro) await new Promise((r) => setTimeout(r, 300));
+  }
+  try { await porta.close(); } catch (e) { /* já fechada */ }
+  if (S.usb.porta === porta) {
+    if (S.usb.manter) {
+      S.usb.estado = 'reconectando';
+      logUsb('a porta caiu (cabo solto ou ESP reiniciando); tentando reabrir…', 'aviso');
+      agendarReabertura();
+    } else {
+      S.usb.estado = 'fechada';
+      logUsb('porta fechada', 'sis');
+    }
+    renderTudo();
+  }
+}
+
+function mesmoDispositivo(a, b) {
+  if (!a || !b || !a.getInfo || !b.getInfo) return false;
+  const x = a.getInfo(), y = b.getInfo();
+  return !!x.usbVendorId && x.usbVendorId === y.usbVendorId && x.usbProductId === y.usbProductId;
+}
+
+function agendarReabertura() {
+  clearTimeout(S.usb.timer);
+  S.usb.timer = setTimeout(async () => {
+    if (!S.usb.manter || S.usb.estado === 'aberta') return;
+    let portas = [];
+    try { portas = await navigator.serial.getPorts(); } catch (e) { portas = []; }
+    const alvo = portas.find((p) => p === S.usb.porta) || portas.find((p) => mesmoDispositivo(p, S.usb.porta));
+    if (alvo && await abrirPorta(alvo, false)) return;
+    if (S.usb.manter) { S.usb.estado = 'reconectando'; agendarReabertura(); renderTudo(); }
+  }, 3000);
+}
+
+async function desconectarUsb() {
+  S.usb.manter = false;
+  gravarPref('usbAuto', false);
+  clearTimeout(S.usb.timer);
+  if (S.usb.leitor) {
+    try { await S.usb.leitor.cancel(); } catch (e) { /* ignora */ }
+  } else {
+    if (S.usb.porta) { try { await S.usb.porta.close(); } catch (e) { /* não estava aberta */ } }
+    S.usb.estado = 'fechada';
+  }
+  renderTudo();
+}
+
+async function escreverSerial(texto) {
+  const p = S.usb.porta;
+  if (!p || S.usb.estado !== 'aberta' || !p.writable) throw new Error('a porta USB não está aberta');
+  const w = p.writable.getWriter();
+  try { await w.write(new TextEncoder().encode(texto)); } finally { w.releaseLock(); }
+}
+
+// Interpreta uma linha do Serial (firmware v1 gravado; aceita também o formato da seção 5 do contrato)
+function processarLinhaSerial(bruta) {
+  const t = String(bruta).replace(/\r/g, '').trim();
+  if (!t) return;
+  const agora = Date.now();
+  S.usb.ultLinha = agora;
+  S.usb.nLinhas++;
+  let tipo = 'texto';
+  if (t.startsWith('{')) {
+    let obj = null;
+    try { obj = JSON.parse(t); } catch (e) { obj = null; }
+    if (!obj || typeof obj !== 'object') tipo = 'aviso';
+    else if (obj.tipo === 'evento' && obj.bomba) {
+      registrarBomba('usb', obj.bomba === 'ligada' ? 'ligada' : 'desligada', { segundos: num(obj.segundos) });
+      tipo = 'bomba';
+    } else if ('solo_bruto' in obj) {
+      if (num(obj.rssi) === 0) S.usb.wifi = 'sem Wi-Fi';
+      else if (num(obj.rssi) != null) S.usb.wifi = 'conectado';
+      registrarLeitura('usb', obj);
+      tipo = 'leitura';
+    }
+  } else if (/^Bomba LIGADA/i.test(t)) {
+    const m = t.match(/por\s+(\d+)\s*s/i);
+    registrarBomba('usb', 'ligada', { segundos: m ? Number(m[1]) : null });
+    tipo = 'bomba';
+  } else if (/^Bomba desligada/i.test(t)) {
+    registrarBomba('usb', 'desligada');
+    tipo = 'bomba';
+  } else if (/SIT - esta.{1,3}o iniciada/i.test(t)) {
+    tipo = 'boot';
+    S.usb.reset = { t: agora, motivo: (S.usb.reset && agora - S.usb.reset.t < 10000) ? S.usb.reset.motivo : '' };
+    S.usb.mqttEstacao = null;
+    if (S.usb.bomba === 'ligada') registrarBomba('usb', 'desligada', { presumido: true });
+    toast('A ESP32 reiniciou (visto pela USB). A bomba começa desligada no boot.');
+  } else if (/^rst:0x/i.test(t)) {
+    tipo = 'boot';
+    const m = t.match(/\(([A-Z0-9_]+)\)/);
+    S.usb.reset = { t: agora, motivo: m ? m[1] : t };
+  } else if (/^(ESP-ROM|Build:|Saved PC|SPIWP|mode:|load:|entry )/.test(t)) {
+    tipo = 'boot';
+  } else if (/MQTT desconectado/i.test(t)) {
+    S.usb.mqttEstacao = 'desconectado';
+    tipo = 'aviso';
+  } else if (/Conectando ao MQTT.*\bok\b/i.test(t)) {
+    S.usb.mqttEstacao = 'conectado';
+  } else if (/Wi-?Fi/i.test(t) && /ok, IP/i.test(t)) {
+    S.usb.wifi = 'conectado';
+  } else if (/falhou/i.test(t) && (/Wi-?Fi/i.test(t) || /^\.+/.test(t))) {
+    S.usb.wifi = 'sem Wi-Fi';
+    tipo = 'aviso';
+  } else if (/^MQTT \S+: /.test(t)) {
+    tipo = 'mqtt';
+  }
+  logUsb(t, tipo);
+  renderTudo();
+}
+
+/* ======================================================================
+   Logs
+   ====================================================================== */
+const ROT_USB = { leitura: ['leitura', 't-ok'], bomba: ['bomba', 't-bomba'], boot: ['boot', ''], aviso: ['aviso', 't-aviso'], mqtt: ['comando via MQTT', 't-cmd'], enviado: ['enviado', 't-cmd'] };
+
+function logUsb(texto, tipo) {
+  if (tipo === 'sis') { logLinha('#logUsb', { sistema: texto }); return; }
+  const tg = ROT_USB[tipo];
+  logLinha('#logUsb', { payload: texto, tags: tg ? [tg] : [], classe: 'l-' + tipo });
+}
+
+function logLinha(sel, item) {
+  const lista = $(sel);
+  if (!lista) return;
+  const vazio = lista.querySelector('.log-vazio');
+  if (vazio) vazio.remove();
+  const li = document.createElement('li');
+  li.className = 'novo' + (item.sistema ? ' sis' : '') + (item.classe ? ' ' + item.classe : '');
+  const tempo = document.createElement('time');
+  tempo.textContent = horaSeg(Date.now());
+  const corpo = document.createElement('div');
+  if (item.sistema) {
+    const p = document.createElement('span');
+    p.className = 'payload';
+    p.textContent = item.sistema;
+    corpo.append(p);
+  } else {
+    const cab = document.createElement('div');
+    cab.className = 'cab';
+    if (item.topico) {
+      const sp = document.createElement('span');
+      sp.className = 'topico';
+      if (item.topico.startsWith(CFG.base + '/')) {
+        const b = document.createElement('span');
+        b.className = 'base';
+        b.textContent = CFG.base + '/';
+        sp.append(b, document.createTextNode(item.topico.slice(CFG.base.length + 1)));
+      } else {
+        sp.textContent = item.topico;
+      }
+      cab.append(sp);
+    }
+    for (const [txt, cls] of (item.tags || [])) {
+      const s = document.createElement('span');
+      s.className = 'tag ' + (cls || '');
+      s.textContent = txt;
+      cab.append(s);
+    }
+    if (cab.childNodes.length) corpo.append(cab);
+    if (item.payload != null) {
+      const c = document.createElement('code');
+      c.className = 'payload';
+      const pl = String(item.payload);
+      c.textContent = pl === '' ? '(payload vazio)' : (pl.length > 400 ? pl.slice(0, 400) + '…' : pl);
+      corpo.append(c);
+    }
+  }
+  li.append(tempo, corpo);
+  lista.prepend(li);
+  while (lista.children.length > CFG.maxLog) lista.lastElementChild.remove();
+}
+
+function prepararLogsVazios() {
+  for (const [sel, txt] of [['#logMqtt', 'Nenhuma mensagem ainda. Ao conectar, aparecem as mensagens retidas (status, bomba/estado) e depois uma leitura a cada 30 s.'],
+                            ['#logUsb', 'USB fechada. Clique em "Conectar USB" e escolha a porta da ESP32.']]) {
+    const lista = $(sel);
+    if (lista.children.length) continue;
+    const li = document.createElement('li');
+    li.className = 'log-vazio';
+    li.textContent = txt;
+    lista.append(li);
+  }
+}
+
+/* ======================================================================
+   Renderização dos cartões e da barra
+   ====================================================================== */
+function montarZonas(id, campo) {
+  const el = document.getElementById(id);
+  const [d0, d1] = ZONAS[campo];
+  const f = FAIXAS[campo];
+  const cortes = [[d0, f.alerta[0], 'alerta'], [f.alerta[0], f.ideal[0], 'atencao'], [f.ideal[0], f.ideal[1], 'ideal'], [f.ideal[1], f.alerta[1], 'atencao'], [f.alerta[1], d1, 'alerta']];
+  const barra = document.createElement('div');
+  barra.className = 'zonas-barra';
+  for (const [a, b, n] of cortes) {
+    const s = document.createElement('span');
+    s.className = 'z-' + n;
+    s.style.flex = String(b - a);
+    barra.append(s);
+  }
+  const marca = document.createElement('div');
+  marca.className = 'zonas-marca';
+  marca.hidden = true;
+  const rot = document.createElement('div');
+  rot.className = 'zonas-rot';
+  for (const v of [f.alerta[0], f.ideal[0], f.ideal[1], f.alerta[1]]) {
+    const s = document.createElement('span');
+    s.style.left = ((v - d0) / (d1 - d0) * 100) + '%';
+    s.textContent = String(v);
+    rot.append(s);
+  }
+  el.append(barra, marca, rot);
+}
+function moverZona(id, campo, v) {
+  const marca = document.querySelector(`#${id} .zonas-marca`);
+  if (!marca) return;
+  if (v == null || !Number.isFinite(v)) { marca.hidden = true; return; }
+  const [d0, d1] = ZONAS[campo];
+  marca.hidden = false;
+  marca.style.left = Math.min(100, Math.max(0, (v - d0) / (d1 - d0) * 100)) + '%';
+}
+
+function qualidadeRssi(r) {
+  if (r == null) return { n: 0, t: 'sem dado', nivel: 'nd' };
+  if (r === 0) return { n: 0, t: 'estação sem Wi-Fi', nivel: 'alerta' };
+  if (r >= -55) return { n: 4, t: 'excelente', nivel: 'ideal' };
+  if (r >= -67) return { n: 3, t: 'bom', nivel: 'ideal' };
+  if (r >= -75) return { n: 2, t: 'razoável', nivel: 'atencao' };
+  if (r >= -85) return { n: 1, t: 'fraco', nivel: 'atencao' };
+  return { n: 0, t: 'muito fraco', nivel: 'alerta' };
+}
+
+const TXT_MQTT = { conectado: ['ok', 'conectado'], conectando: ['espera', 'conectando…'], reconectando: ['espera', 'reconectando…'], parado: ['', 'desconectado'], 'sem-lib': ['erro', 'biblioteca não carregou (sem internet?)'] };
+const TXT_USB = { fechada: ['', 'porta fechada'], abrindo: ['espera', 'abrindo…'], aberta: ['ok', 'conectada'], ocupada: ['erro', 'porta ocupada'], erro: ['erro', 'erro'], reconectando: ['espera', 'reconectando…'], indisponivel: ['erro', 'sem Web Serial neste navegador'] };
+
+function renderTudo() {
+  const agora = Date.now();
+  const ef = fonteEfetiva();
+  const m = S.mqtt, u = S.usb;
+
+  // relógio e "ao vivo"
+  $('#relogio').textContent = horaSeg(agora);
+  const lEf = S.ult[ef];
+  const vivo = !!lEf && agora - lEf.recebido < CFG.limiteAutoMs;
+  $('#aoVivo').classList.toggle('on', vivo);
+  $('#aoVivoTxt').textContent = vivo ? 'ao vivo · ' + (ef === 'mqtt' ? 'Wi-Fi' : 'USB') : 'sem dados recentes';
+
+  // seletor de fonte
+  document.querySelectorAll('#segFonte button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fonte === S.fonte)));
+
+  // canal MQTT
+  const tm = TXT_MQTT[m.estado] || ['', m.estado];
+  setPonto($('#canalMqtt .ponto'), tm[0], m.estado === 'conectado' && ef === 'mqtt' && vivo);
+  $('#mqttEstado').textContent = tm[1];
+  $('#mqttDetalhe').textContent = (m.url || CFG.brokers[0]) + ' · ' + CFG.base + '/#';
+  $('#btnMqtt').textContent = m.manter ? 'Desconectar' : 'Conectar';
+  $('#btnMqtt').disabled = m.estado === 'sem-lib';
+
+  // canal USB
+  const tu = TXT_USB[u.estado] || ['', u.estado];
+  setPonto($('#canalUsb .ponto'), tu[0], u.estado === 'aberta' && ef === 'usb' && vivo);
+  $('#usbEstado').textContent = tu[1];
+  $('#usbDetalhe').textContent = u.estado === 'aberta'
+    ? `115200 baud${u.info ? ' · ' + u.info : ''} · ${u.nLinhas} linhas`
+    : (u.estado === 'ocupada' ? 'feche o coletor_serial.py (COM11) ou o Monitor Serial' : 'Web Serial · 115200 baud · escolha a COM da ESP32');
+  $('#btnUsb').textContent = u.manter ? 'Desconectar USB' : (u.estado === 'ocupada' || u.estado === 'erro' ? 'Tentar de novo' : 'Conectar USB');
+  $('#btnUsb').disabled = !temSerial || u.estado === 'abrindo';
+  $('#canalMqtt').classList.toggle('ativo', ef === 'mqtt');
+  $('#canalUsb').classList.toggle('ativo', ef === 'usb');
+  marcarAtivo('#canalMqtt', ef === 'mqtt');
+  marcarAtivo('#canalUsb', ef === 'usb');
+
+  // frase da fonte ativa
+  const nome = ef === 'mqtt' ? 'Wi-Fi (MQTT)' : 'cabo (USB)';
+  const frase = $('#fonteAtiva');
+  frase.textContent = '';
+  const b = document.createElement('b');
+  b.textContent = (S.fonte === 'auto' ? 'AUTO → ' : '') + nome;
+  frase.append('Mostrando ', b);
+  let resto = '';
+  if (S.fonte === 'auto' && ef === 'usb') {
+    if (m.estado !== 'conectado') resto += ' (MQTT desconectado)';
+    else resto += m.ultLeitura ? ` (MQTT sem leitura ${ha(m.ultLeitura)})` : ' (nenhuma leitura pelo MQTT ainda)';
+  }
+  resto += lEf ? ` · última leitura ${ha(lEf.recebido)}` : ' · aguardando a primeira leitura (a estação envia a cada 30 s)';
+  frase.append(resto);
+
+  renderKpis(ef, agora);
+  renderEstacao(ef, agora);
+  renderBomba(agora);
+  $('#contMqtt').textContent = `${m.nMsgs} ${m.nMsgs === 1 ? 'mensagem' : 'mensagens'}${m.ultMsg ? ' · última ' + ha(m.ultMsg) : ''}`;
+  $('#contUsb').textContent = `${u.nLinhas} ${u.nLinhas === 1 ? 'linha' : 'linhas'}${u.ultLinha ? ' · última ' + ha(u.ultLinha) : ''}`;
+}
+
+function marcarAtivo(sel, ativo) {
+  const alvo = document.querySelector(sel + ' .canal-txt > span');
+  let tag = alvo.querySelector('.tag-ativo');
+  if (ativo && !tag) {
+    tag = document.createElement('span');
+    tag.className = 'tag-ativo';
+    tag.textContent = 'em uso';
+    alvo.append(tag);
+  } else if (!ativo && tag) {
+    tag.remove();
+  }
+}
+
+function renderKpis(ef, agora) {
+  const l = S.ult[ef];
+  const velho = !l || agora - l.recebido > CFG.limiteAutoMs;
+  const via = l ? `${nomesVia(l.via)} · ${horaSeg(l.recebido)}` : 'sem leitura';
+  for (const [id, campo] of [['kSolo', 'solo_pct'], ['kTemp', 'temp_c'], ['kUmid', 'umid_ar_pct']]) {
+    const v = l ? l[campo] : null;
+    $(`#${id}Valor`).textContent = fmtV(campo, v);
+    const c = classificar(campo, v);
+    if (l && v == null && campo !== 'solo_pct') c.texto = 'falha no AM2302';
+    setChip($(`#${id}Chip`), c.nivel, c.texto);
+    moverZona(`${id}Zonas`, campo, v);
+    $(`#${id}Via`).textContent = via;
+    $(`#${id}`).classList.toggle('velho', !!l && velho);
+  }
+  $('#kSoloBruto').textContent = l && l.solo_bruto != null
+    ? `valor bruto ${l.solo_bruto} no ADC de 0 a 4095 (calibração: 3560 no ar, 1300 na água)`
+    : 'valor bruto –';
+  const r = l ? l.rssi : null;
+  $('#kRssiValor').textContent = r == null ? '–' : String(Math.round(r));
+  const q = qualidadeRssi(r);
+  setChip($('#kRssiTexto'), q.nivel, q.t);
+  document.querySelectorAll('#kRssiBarras rect').forEach((rect, i) => rect.classList.toggle('on', i < q.n));
+  $('#kRssiVia').textContent = via;
+  $('#kRssi').classList.toggle('velho', !!l && velho);
+}
+
+function renderEstacao(ef, agora) {
+  const m = S.mqtt, u = S.usb;
+  let mCls = '', mTxt;
+  if (m.estado !== 'conectado') mTxt = 'painel sem conexão MQTT';
+  else if (m.status === 'online') { mCls = 'ok'; mTxt = 'online' + (m.statusRetido ? ' (status retido)' : ' desde ' + horaSeg(m.statusEm)); }
+  else if (m.status === 'offline') { mCls = 'erro'; mTxt = 'offline, last will ' + (m.statusRetido ? '(retido)' : 'às ' + horaSeg(m.statusEm)); }
+  else mTxt = 'nenhum status recebido';
+  if (m.ultLeitura) mTxt += ' · leitura ' + ha(m.ultLeitura);
+
+  let uCls = '', uTxt;
+  const recebendo = u.estado === 'aberta' && u.ultLinha && agora - u.ultLinha < 70000;
+  if (u.estado === 'aberta') { uCls = recebendo ? 'ok' : 'espera'; uTxt = recebendo ? 'recebendo · linha ' + ha(u.ultLinha) : 'porta aberta, sem linhas ainda'; }
+  else uTxt = (TXT_USB[u.estado] || ['', u.estado])[1];
+  if (u.estado === 'aberta' && u.wifi === 'sem Wi-Fi') uTxt += ' · estação sem Wi-Fi';
+
+  setPonto($('#kEstMqtt .ponto'), mCls, false);
+  $('#kEstMqtt span:last-child').textContent = mTxt;
+  setPonto($('#kEstUsb .ponto'), uCls, false);
+  $('#kEstUsb span:last-child').textContent = uTxt;
+
+  let cls = '', titulo = 'Sem informação', sub = '';
+  if (ef === 'mqtt') {
+    if (m.estado === 'conectado' && m.status === 'online') {
+      cls = 'ok'; titulo = 'Online';
+      const semLeitura = m.ultLeitura ? agora - m.ultLeitura : (m.desde ? agora - m.desde : 0);
+      if (semLeitura > CFG.limiteAutoMs) { cls = 'espera'; sub = `Status online, mas sem leitura ${m.ultLeitura ? ha(m.ultLeitura) : 'desde que o painel conectou'}.`; }
+      else sub = m.statusRetido ? 'Estado retido no broker; confirmado a cada leitura.' : '';
+    } else if (m.estado === 'conectado' && m.status === 'offline') {
+      cls = 'erro'; titulo = 'Offline';
+      sub = 'O broker publicou o last will: a estação perdeu a conexão.';
+    } else if (m.estado === 'conectado') {
+      sub = 'Ainda sem mensagem no tópico status.';
+    } else {
+      sub = 'Conecte o MQTT ou a USB.';
+    }
+  } else {
+    if (recebendo) { cls = 'ok'; titulo = 'Online (USB)'; sub = 'Dados chegando pelo cabo.'; }
+    else if (u.estado === 'aberta') { cls = 'espera'; titulo = 'Sem dados'; sub = 'Porta aberta, mas a ESP32 não mandou nada há mais de 70 s.'; }
+    else sub = 'Conecte a USB ou volte para o MQTT.';
+  }
+  if (u.reset && agora - u.reset.t < 30 * 60e3) sub += ` A ESP32 reiniciou às ${horaSeg(u.reset.t)}${u.reset.motivo ? ' (' + u.reset.motivo + ')' : ''}.`;
+  const caixa = $('#kEstacaoValor');
+  setPonto(caixa.querySelector('.ponto'), cls, cls === 'ok');
+  caixa.querySelector('span:last-child').textContent = titulo;
+  $('#kEstacaoSub').textContent = sub.trim();
+}
+
+function renderBomba(agora) {
+  const cands = ['mqtt', 'usb'].filter((v) => S[v].bomba).map((v) => ({ via: v, c: S[v] }));
+  cands.sort((a, b) => b.c.bombaEm - a.c.bombaEm);
+  const atual = cands[0];
+  const caixa = $('#kBombaEstado');
+  let titulo = '–', sub = 'Sem informação ainda (tópico bomba/estado ou linha "Bomba ..." da USB).', ligada = false;
+  if (atual) {
+    const c = atual.c;
+    const fonte = atual.via === 'mqtt' ? 'tópico bomba/estado' + (c.bombaRetido ? ' (retido)' : '') : 'linha da USB';
+    if (c.bomba === 'ligada') {
+      ligada = true;
+      titulo = 'Ligada';
+      const dur = c.bombaDur;
+      const passou = (agora - c.bombaEm) / 1000;
+      if (dur && passou < dur) sub = `desliga em ${Math.max(1, Math.ceil(dur - passou))} s · ${fonte}`;
+      else if (dur && passou > dur + 4) sub = `desligamento não confirmado (${Math.round(passou)} s desde que ligou) · ${fonte}`;
+      else sub = `ligada às ${horaSeg(c.bombaEm)} · ${fonte}`;
+    } else {
+      titulo = 'Desligada';
+      sub = c.bombaPresumido ? 'desligada porque a ESP32 reiniciou' : `desde ${horaSeg(c.bombaEm)} · ${fonte}`;
+    }
+  }
+  caixa.classList.toggle('ligada', ligada);
+  $('#kBombaValor').textContent = titulo;
+  $('#kBombaSub').textContent = sub;
+  const r = S.regas[S.regas.length - 1];
+  $('#kBombaUlt').textContent = r
+    ? `última rega: ${dataHoraSeg(r.t)}${r.segundos ? ' · ' + r.segundos + ' s' : ''} · via ${nomesVia(r.via)}`
+    : 'última rega: nenhuma nesta sessão';
+  const canal = canalComando();
+  const via = $('#irrigarVia');
+  via.textContent = '';
+  if (canal === 'mqtt') {
+    const code = document.createElement('code');
+    code.textContent = `${CFG.base}/bomba/cmd`;
+    via.append('Envia por MQTT para ', code, CFG.teste ? ' (tópico de TESTE)' : '');
+  } else if (canal === 'usb') {
+    via.append('Envia pela USB (Serial): o número de segundos e Enter.');
+  } else {
+    via.append('Sem canal para o comando: conecte o MQTT ou a USB.');
+  }
+  if (S.cmd) via.append(` Aguardando confirmação do comando de ${S.cmd.segundos} s…`);
+  $('#btnIrrigar').disabled = !canal || !!S.cmd;
+  $('#btnParar').disabled = !canal;
+  $('#kBombaVia').textContent = atual ? 'estado via ' + (atual.via === 'mqtt' ? 'MQTT' : 'USB') : '';
+}
+
+function atualizarRotuloIrrigar() {
+  const v = clampSeg($('#segundos').value || 1);
+  $('#btnIrrigar').textContent = `Irrigar ${v} s`;
+}
+
+/* ======================================================================
+   Gráficos (SVG desenhado aqui; sem biblioteca)
+   ====================================================================== */
+const GRAFS = [
+  { id: 'gSolo', campo: 'solo_pct', neutro: 50, dom: () => [0, 100] },
+  { id: 'gTemp', campo: 'temp_c', neutro: 25, dom: (lo, hi) => [Math.min(15, Math.floor(lo - 2)), Math.max(37, Math.ceil(hi + 2))] },
+  { id: 'gUmid', campo: 'umid_ar_pct', neutro: 60, dom: (lo) => [Math.min(20, Math.floor((lo - 5) / 10) * 10), 100] },
+  { id: 'gRssi', campo: 'rssi', neutro: -65, dom: (lo, hi) => [Math.min(-100, Math.floor((lo - 5) / 10) * 10), Math.max(-30, Math.ceil((hi + 5) / 10) * 10)] },
+];
+
+let pedidoGraf = 0;
+function agendarGraficos() {
+  if (pedidoGraf) return;
+  pedidoGraf = requestAnimationFrame(() => { pedidoGraf = 0; renderGraficos(); });
+}
+
+function pontosDaFonte() {
+  if (S.fonte === 'mqtt') return S.pontos.filter((p) => p.via.mqtt);
+  if (S.fonte === 'usb') return S.pontos.filter((p) => p.via.usb);
+  return S.pontos;
+}
+
+function dominioX(pontos, fim, janela) {
+  let ini = pontos.length ? pontos[0].t : fim - 5 * 60e3;
+  if (janela) ini = Math.max(ini, fim - janela);
+  if (fim - ini < 5 * 60e3) ini = fim - 5 * 60e3;
+  return [ini, fim];
+}
+
+function renderGraficos() {
+  const hist = S.aba === 'historico';
+  let pontos, regas, fim;
+  if (hist) {
+    pontos = S.hist.leituras;
+    regas = S.hist.regas;
+    fim = pontos.length ? pontos[pontos.length - 1].t : Date.now();
+  } else {
+    pontos = pontosDaFonte();
+    regas = S.regas;
+    fim = Math.max(Date.now(), pontos.length ? pontos[pontos.length - 1].t : 0);
+  }
+  const dom = dominioX(pontos, fim, S.janela);
+  for (const g of GRAFS) desenharGrafico(g, pontos, regas, dom, hist);
+  renderInfoGraficos(pontos, regas, dom, hist);
+  if (S.tabela) renderTabela(pontos);
+}
+
+function renderInfoGraficos(pontos, regas, dom, hist) {
+  const el = $('#grafInfo');
+  if (!hist) {
+    const n = pontos.filter((p) => p.t >= dom[0]).length;
+    el.textContent = `Sessão ao vivo (${S.fonte === 'auto' ? 'MQTT + USB, sem repetir a mesma leitura' : S.fonte === 'mqtt' ? 'só MQTT' : 'só USB'}): ${n} ${n === 1 ? 'leitura' : 'leituras'} no intervalo, ${S.regas.length} ${S.regas.length === 1 ? 'rega' : 'regas'} na sessão.`;
+    return;
+  }
+  if (!pontos.length) {
+    el.textContent = 'Histórico: nenhum CSV carregado. Clique em "Carregar CSV…" e escolha leituras.csv e eventos.csv da pasta outputs/coleta.';
+    return;
+  }
+  const ini = pontos[0].t, fim = pontos[pontos.length - 1].t;
+  const faixa = (campo, un) => {
+    const vs = pontos.map((p) => p[campo]).filter((v) => v != null && !(campo === 'rssi' && v === 0));
+    if (!vs.length) return '';
+    return `${fmtV(campo, Math.min(...vs))} a ${fmtV(campo, Math.max(...vs))} ${un}`;
+  };
+  const dur = Math.round((fim - ini) / 60e3);
+  const partes = [
+    `Histórico (${S.hist.nomes.leituras || 'leituras.csv'}): ${pontos.length} leituras de ${dataHoraSeg(ini)} a ${dataHoraSeg(fim)} (${dur < 120 ? dur + ' min' : (dur / 60).toFixed(1).replace('.', ',') + ' h'})`,
+    S.hist.nomes.eventos ? `${regas.length} ${regas.length === 1 ? 'rega' : 'regas'} em ${S.hist.nomes.eventos}${regas.length ? ' (' + regas.slice(-4).map((r) => horaSeg(r.t)).join(', ') + ')' : ''}` : 'sem eventos.csv (carregue junto para ver as regas)',
+    `solo ${faixa('solo_pct', '%')}`,
+    `temperatura ${faixa('temp_c', '°C')}`,
+    `umidade do ar ${faixa('umid_ar_pct', '%')}`,
+  ];
+  if (S.hist.lidoEm) partes.push(`lido às ${horaSeg(S.hist.lidoEm)}`);
+  el.textContent = partes.filter(Boolean).join(' · ');
+}
+
+function lowerBound(arr, t) {
+  let lo = 0, hi = arr.length;
+  while (lo < hi) { const mid = (lo + hi) >> 1; if (arr[mid].t < t) lo = mid + 1; else hi = mid; }
+  return lo;
+}
+function maisProximo(arr, t) {
+  const i = lowerBound(arr, t);
+  if (i <= 0) return 0;
+  if (i >= arr.length) return arr.length - 1;
+  return (t - arr[i - 1].t) <= (arr[i].t - t) ? i - 1 : i;
+}
+function limiteGap(pts) {
+  if (pts.length < 3) return 150e3;
+  const dts = [];
+  for (let i = 1; i < pts.length; i++) dts.push(pts[i].t - pts[i - 1].t);
+  dts.sort((a, b) => a - b);
+  return Math.max(100e3, dts[dts.length >> 1] * 3.5);
+}
+function ticksBonitos(a, b, n) {
+  const bruto = (b - a) / n;
+  const mag = Math.pow(10, Math.floor(Math.log10(bruto)));
+  const r = bruto / mag;
+  const passo = (r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10) * mag;
+  const out = [];
+  for (let v = Math.ceil(a / passo) * passo; v <= b + 1e-9; v += passo) out.push(Math.round(v * 1e6) / 1e6);
+  return out;
+}
+function ticksTempo(x0, x1, n) {
+  const passos = [30e3, 60e3, 120e3, 300e3, 600e3, 900e3, 1800e3, 3600e3, 7200e3, 10800e3, 21600e3, 43200e3, 86400e3, 172800e3, 604800e3];
+  const span = x1 - x0;
+  const passo = passos.find((p) => span / p <= n) || passos[passos.length - 1];
+  const off = new Date(x0).getTimezoneOffset() * 60e3;
+  const out = [];
+  for (let t = Math.ceil((x0 - off) / passo) * passo + off; t <= x1; t += passo) out.push(t);
+  return out;
+}
+function rotTempo(t, span) {
+  const d = new Date(t);
+  const hm = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  if (span > 36 * 3600e3) {
+    const dia = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    return (d.getHours() || d.getMinutes()) ? dia + ' ' + hm : dia;
+  }
+  return hm;
+}
+function fmtTick(campo, v) {
+  return campo === 'temp_c' || campo === 'umid_ar_pct' || campo === 'solo_pct' ? String(Math.round(v * 10) / 10).replace('.', ',') : String(Math.round(v));
+}
+function valorDe(p, campo) {
+  const v = p[campo];
+  return campo === 'rssi' && v === 0 ? null : v;   // 0 dBm = sem Wi-Fi, não é medida
+}
+
+function desenharGrafico(g, pontos, regas, dom, hist) {
+  const fig = document.getElementById(g.id);
+  const svg = fig.querySelector('svg');
+  const W = Math.max(240, Math.round(svg.clientWidth || 600));
+  const H = Math.max(160, Math.round(svg.clientHeight || 210));
+  const M = { l: 40, r: 64, t: 22, b: 24 };
+  const pw = W - M.l - M.r, ph = H - M.t - M.b;
+  const [x0, x1] = dom;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  let i0 = lowerBound(pontos, x0);
+  if (i0 > 0) i0--;
+  const vis = [];
+  for (let i = i0; i < pontos.length; i++) { if (pontos[i].t > x1) break; vis.push(pontos[i]); }
+  const vals = [];
+  for (const p of vis) { const v = valorDe(p, g.campo); if (v != null && p.t >= x0) vals.push(v); }
+  let lo = g.neutro, hi = g.neutro;
+  if (vals.length) { lo = Infinity; hi = -Infinity; for (const v of vals) { if (v < lo) lo = v; if (v > hi) hi = v; } }
+  const [y0, y1] = g.dom(lo, hi);
+  const X = (t) => M.l + (t - x0) / ((x1 - x0) || 1) * pw;
+  const Y = (v) => M.t + (1 - (v - y0) / ((y1 - y0) || 1)) * ph;
+  const f = FAIXAS[g.campo];
+
+  let s = `<defs><clipPath id="clip-${g.id}"><rect x="${M.l}" y="${M.t - 6}" width="${pw}" height="${ph + 12}"/></clipPath></defs>`;
+
+  // faixas do tomateiro
+  if (f) {
+    const zonas = [[-Infinity, f.alerta[0], 'alerta'], [f.alerta[0], f.ideal[0], 'atencao'], [f.ideal[0], f.ideal[1], 'ideal'], [f.ideal[1], f.alerta[1], 'atencao'], [f.alerta[1], Infinity, 'alerta']];
+    for (const [a, b, n] of zonas) {
+      const zlo = Math.max(a, y0), zhi = Math.min(b, y1);
+      if (zhi <= zlo) continue;
+      s += `<rect class="fx-${n}" x="${M.l}" y="${f2(Y(zhi))}" width="${pw}" height="${f2(Y(zlo) - Y(zhi))}"/>`;
+    }
+  }
+
+  // eixo y: limites das faixas como marcas (o próprio eixo explica as cores)
+  let yt = f ? [y0, f.alerta[0], f.ideal[0], f.ideal[1], f.alerta[1], y1] : ticksBonitos(y0, y1, 4);
+  yt = [...new Set(yt)].filter((v) => v >= y0 && v <= y1).sort((a, b) => a - b);
+  const prior = new Set(f ? [f.alerta[0], f.ideal[0], f.ideal[1], f.alerta[1]] : []);
+  const ytOk = yt.filter((v) => prior.has(v) || yt.every((w) => w === v || !prior.has(w) || Math.abs(Y(w) - Y(v)) >= 13));
+  for (const v of ytOk) {
+    const y = f2(Y(v));
+    s += `<line class="l-grade" x1="${M.l}" x2="${M.l + pw}" y1="${y}" y2="${y}"/>`;
+    s += `<text class="t-eixo" x="${M.l - 7}" y="${y}" dy="0.33em" text-anchor="end">${fmtTick(g.campo, v)}</text>`;
+  }
+
+  // eixo x
+  for (const t of ticksTempo(x0, x1, Math.max(2, Math.floor(pw / 86)))) {
+    const x = f2(X(t));
+    s += `<line class="l-tick" x1="${x}" x2="${x}" y1="${M.t + ph}" y2="${M.t + ph + 4}"/>`;
+    s += `<text class="t-eixo" x="${x}" y="${M.t + ph + 17}" text-anchor="middle">${rotTempo(t, x1 - x0)}</text>`;
+  }
+  s += `<line class="l-base" x1="${M.l}" x2="${M.l + pw}" y1="${M.t + ph}" y2="${M.t + ph}"/>`;
+
+  // regas
+  const regasVis = regas.filter((r) => r.t >= x0 && r.t <= x1);
+  for (const r of regasVis) {
+    const x = X(r.t);
+    s += `<line class="rega" x1="${f2(x)}" x2="${f2(x)}" y1="${M.t}" y2="${M.t + ph}"/>`;
+    s += `<path class="gota" d="M${f2(x)} ${M.t - 17}c0 0-4.4 5-4.4 7.7a4.4 4.4 0 0 0 8.8 0c0-2.7-4.4-7.7-4.4-7.7z"/>`;
+  }
+
+  // série, quebrando a linha onde faltam leituras
+  const gap = limiteGap(vis);
+  let d = '', segN = 0, segIni = null, tAnt = null, ultimo = null;
+  const isolados = [], todos = [];
+  for (const p of vis) {
+    const v = valorDe(p, g.campo);
+    if (v == null) { if (segN === 1) isolados.push(segIni); segN = 0; tAnt = null; continue; }
+    const x = X(p.t), y = Y(v);
+    if (tAnt == null || p.t - tAnt > gap) {
+      if (segN === 1) isolados.push(segIni);
+      d += `M${f2(x)} ${f2(y)}`;
+      segN = 1;
+      segIni = [x, y];
+    } else {
+      d += `L${f2(x)} ${f2(y)}`;
+      segN++;
+    }
+    tAnt = p.t;
+    if (p.t >= x0) { todos.push([x, y]); ultimo = { p, v, x, y }; }
+  }
+  if (segN === 1) isolados.push(segIni);
+  if (d) s += `<path class="serie" d="${d}" clip-path="url(#clip-${g.id})"/>`;
+  for (const [x, y] of (todos.length <= 40 ? todos : isolados)) {
+    if (x >= M.l - 1) s += `<circle class="pt" cx="${f2(x)}" cy="${f2(y)}" r="2.6"/>`;
+  }
+  if (ultimo) {
+    const nivel = f ? classificar(g.campo, ultimo.v).nivel : 'neutro';
+    s += `<circle class="fim fim-${nivel}" cx="${f2(ultimo.x)}" cy="${f2(ultimo.y)}" r="5"/>`;
+    s += `<text class="t-fim" x="${f2(ultimo.x + 10)}" y="${f2(ultimo.y)}" dy="0.33em">${fmtV(g.campo, ultimo.v)} ${UN[g.campo]}</text>`;
+  }
+  if (!vals.length) {
+    const msg = hist ? (pontos.length ? 'Sem leituras neste intervalo' : 'Carregue o leituras.csv') : 'Aguardando leituras…';
+    s += `<text class="t-vazio" x="${f2(M.l + pw / 2)}" y="${f2(M.t + ph / 2)}" text-anchor="middle">${msg}</text>`;
+  }
+
+  // camada de leitura (mira)
+  s += `<line class="mira" x1="0" x2="0" y1="${M.t}" y2="${M.t + ph}" visibility="hidden"/>`;
+  s += `<circle class="mira-pt" r="5" visibility="hidden"/>`;
+  s += `<rect class="alvo" x="${M.l}" y="0" width="${pw}" height="${H}" fill="transparent"/>`;
+  svg.innerHTML = s;   // só números e textos fixos entram aqui
+
+  const pts = vis.filter((p) => p.t >= x0 && valorDe(p, g.campo) != null);
+  fig.__geo = { W, H, M, pw, ph, x0, x1, X, Y, pts, g, regas: regasVis, hist };
+  const ultimoTxt = ultimo ? `, último valor ${fmtV(g.campo, ultimo.v)} ${UN[g.campo]} às ${horaSeg(ultimo.p.t)}` : ', sem leituras';
+  svg.setAttribute('aria-label', `${fig.querySelector('figcaption b').textContent}: ${pts.length} leituras${ultimoTxt}${regasVis.length ? ', ' + regasVis.length + ' regas marcadas' : ''}`);
+  if (fig.__hoverT != null && pts.length) mostrarDica(fig, maisProximo(pts, fig.__hoverT));
+  else esconderDica(fig, true);
+}
+
+function mostrarDica(fig, idx) {
+  const geo = fig.__geo;
+  if (!geo || !geo.pts.length) return;
+  idx = Math.max(0, Math.min(geo.pts.length - 1, idx));
+  const p = geo.pts[idx];
+  fig.__idx = idx;
+  const campo = geo.g.campo;
+  const v = valorDe(p, campo);
+  const x = geo.X(p.t), y = geo.Y(v);
+  const svg = fig.querySelector('svg');
+  const mira = svg.querySelector('.mira'), mp = svg.querySelector('.mira-pt');
+  mira.setAttribute('x1', f2(x)); mira.setAttribute('x2', f2(x)); mira.setAttribute('visibility', 'visible');
+  mp.setAttribute('cx', f2(x)); mp.setAttribute('cy', f2(y)); mp.setAttribute('visibility', 'visible');
+  const dica = fig.querySelector('.dica');
+  dica.replaceChildren();
+  const forte = document.createElement('strong');
+  forte.textContent = `${fmtV(campo, v)} ${UN[campo]}`;
+  dica.append(forte);
+  const linha = (txt) => { const s = document.createElement('span'); s.textContent = txt; dica.append(s); };
+  linha(dataHoraSeg(p.t));
+  if (campo === 'solo_pct' && p.solo_bruto != null) linha(`bruto ${p.solo_bruto}`);
+  if (FAIXAS[campo]) linha(classificar(campo, v).texto);
+  linha(`via ${nomesVia(p.via)}`);
+  const r = geo.regas.find((rr) => Math.abs(rr.t - p.t) < 45000);
+  if (r) linha(`rega às ${horaSeg(r.t)}${r.segundos ? ' (' + r.segundos + ' s)' : ''}`);
+  dica.hidden = false;
+  const sr = svg.getBoundingClientRect(), fr = fig.getBoundingClientRect();
+  const k = sr.width / geo.W;
+  const baseX = sr.left - fr.left + x * k;
+  let left = baseX + 14;
+  if (left + dica.offsetWidth > fr.width - 4) left = baseX - 14 - dica.offsetWidth;
+  dica.style.left = Math.max(4, left) + 'px';
+  dica.style.top = Math.max(4, sr.top - fr.top + y * k - dica.offsetHeight / 2) + 'px';
+}
+function esconderDica(fig, manterHover) {
+  const dica = fig.querySelector('.dica');
+  if (dica) dica.hidden = true;
+  const svg = fig.querySelector('svg');
+  svg.querySelectorAll('.mira, .mira-pt').forEach((el) => el.setAttribute('visibility', 'hidden'));
+  if (!manterHover) fig.__hoverT = null;
+}
+function prepararHover(fig) {
+  const svg = fig.querySelector('svg');
+  svg.addEventListener('pointermove', (e) => {
+    const geo = fig.__geo;
+    if (!geo || !geo.pts.length) return;
+    const sr = svg.getBoundingClientRect();
+    const x = (e.clientX - sr.left) * (geo.W / sr.width);
+    const t = geo.x0 + (x - geo.M.l) / geo.pw * (geo.x1 - geo.x0);
+    fig.__hoverT = t;
+    mostrarDica(fig, maisProximo(geo.pts, t));
+  });
+  svg.addEventListener('pointerleave', () => esconderDica(fig));
+  fig.addEventListener('focus', () => {
+    const geo = fig.__geo;
+    if (geo && geo.pts.length) { fig.__hoverT = geo.pts[geo.pts.length - 1].t; mostrarDica(fig, geo.pts.length - 1); }
+  });
+  fig.addEventListener('blur', () => esconderDica(fig));
+  fig.addEventListener('keydown', (e) => {
+    const geo = fig.__geo;
+    if (!geo || !geo.pts.length) return;
+    let i = fig.__idx == null ? geo.pts.length - 1 : fig.__idx;
+    if (e.key === 'ArrowLeft') i--;
+    else if (e.key === 'ArrowRight') i++;
+    else if (e.key === 'Home') i = 0;
+    else if (e.key === 'End') i = geo.pts.length - 1;
+    else if (e.key === 'Escape') { esconderDica(fig); return; }
+    else return;
+    e.preventDefault();
+    i = Math.max(0, Math.min(geo.pts.length - 1, i));
+    fig.__hoverT = geo.pts[i].t;
+    mostrarDica(fig, i);
+  });
+}
+
+function renderTabela(pontos) {
+  const corpo = $('#tabelaCorpo');
+  corpo.textContent = '';
+  const ult = pontos.slice(-150).reverse();
+  const frag = document.createDocumentFragment();
+  for (const p of ult) {
+    const tr = document.createElement('tr');
+    const cels = [dataHoraSeg(p.t), fmtV('solo_pct', p.solo_pct), p.solo_bruto == null ? '–' : String(p.solo_bruto), fmtV('temp_c', p.temp_c), fmtV('umid_ar_pct', p.umid_ar_pct), p.rssi == null ? '–' : String(p.rssi), nomesVia(p.via)];
+    for (const c of cels) { const td = document.createElement('td'); td.textContent = c; tr.append(td); }
+    frag.append(tr);
+  }
+  corpo.append(frag);
+  $('#tabelaInfo').textContent = `${ult.length} de ${pontos.length} leituras (${S.aba === 'historico' ? 'histórico CSV' : 'sessão'}), mais recentes primeiro`;
+  const sessao = S.aba !== 'historico';
+  $('#btnExpLeit').hidden = !sessao;
+  $('#btnExpEv').hidden = !sessao;
+  $('#btnLimparSessao').hidden = !sessao;
+}
+
+/* ======================================================================
+   Histórico (CSV da coleta)
+   ====================================================================== */
+function parseCSV(texto) {
+  const linhas = [];
+  let campo = '', linha = [], aspas = false;
+  for (let i = 0; i < texto.length; i++) {
+    const c = texto[i];
+    if (aspas) {
+      if (c === '"') { if (texto[i + 1] === '"') { campo += '"'; i++; } else aspas = false; }
+      else campo += c;
+    } else if (c === '"') aspas = true;
+    else if (c === ',') { linha.push(campo); campo = ''; }
+    else if (c === '\n') { linha.push(campo); linhas.push(linha); linha = []; campo = ''; }
+    else if (c !== '\r') campo += c;
+  }
+  if (campo !== '' || linha.length) { linha.push(campo); linhas.push(linha); }
+  return linhas;
+}
+function dataLocal(txt) {
+  const t = Date.parse(String(txt).trim());   // "2026-10-13T21:11:35" é lido como hora local
+  return Number.isFinite(t) ? t : null;
+}
+
+function carregarTextoCSV(nome, texto) {
+  const linhas = parseCSV(texto).filter((l) => !(l.length === 1 && l[0].trim() === ''));
+  if (!linhas.length) throw new Error(`${nome}: arquivo vazio`);
+  const cab = linhas[0].map((s) => s.trim().replace(/^﻿/, ''));
+  const col = (n) => cab.indexOf(n);
+  if (col('solo_bruto') >= 0 && col('recebido_em') >= 0) {
+    const out = [];
+    for (const l of linhas.slice(1)) {
+      if (l.length < cab.length) continue;   // linha ainda sendo escrita pelo coletor
+      const rec = dataLocal(l[col('recebido_em')]);
+      const ts = col('ts') >= 0 ? num(l[col('ts')]) : null;
+      const tsOk = ts != null && ts > 1.7e9 && ts < 4.1e9;
+      const t = tsOk ? ts * 1000 : rec;      // igual ao graficos.py: NTP quando existe, senão a chegada
+      if (t == null) continue;
+      const pega = (n) => (col(n) >= 0 ? num(l[col(n)]) : null);
+      out.push({ t, recebido: rec == null ? t : rec, ts: tsOk ? ts : null, solo_bruto: pega('solo_bruto'), solo_pct: pega('solo_pct'), temp_c: pega('temp_c'), umid_ar_pct: pega('umid_ar_pct'), rssi: pega('rssi'), via: { csv: true } });
+    }
+    out.sort((a, b) => a.t - b.t);
+    S.hist.leituras = out;
+    S.hist.nomes.leituras = nome;
+    return `${nome}: ${out.length} leituras`;
+  }
+  if (col('topico') >= 0 && col('valor') >= 0 && col('recebido_em') >= 0) {
+    const ev = [];
+    for (const l of linhas.slice(1)) {
+      if (l.length < cab.length) continue;
+      const t = dataLocal(l[col('recebido_em')]);
+      if (t == null) continue;
+      ev.push({ t, topico: l[col('topico')].trim(), valor: l[col('valor')].trim() });
+    }
+    S.hist.eventos = ev;
+    S.hist.nomes.eventos = nome;
+    return `${nome}: ${ev.length} eventos`;
+  }
+  throw new Error(`${nome}: não parece o leituras.csv nem o eventos.csv da coleta`);
+}
+
+function recalcularRegasHist() {
+  const L = S.hist.leituras;
+  let regas = S.hist.eventos
+    .filter((e) => /\/bomba\/estado$/.test(e.topico) && e.valor.toLowerCase() === 'ligada')
+    .map((e) => ({ t: e.t, segundos: null, via: { csv: true } }));
+  if (L.length) {   // como o graficos.py: descarta eventos fora da janela coletada
+    const ini = L[0].t - 60e3, fim = L[L.length - 1].t + 60e3;
+    regas = regas.filter((r) => r.t >= ini && r.t <= fim);
+  }
+  S.hist.regas = regas.sort((a, b) => a.t - b.t);
+}
+
+async function lerArquivos(arquivos, silencioso) {
+  const msgs = [];
+  for (const arq of arquivos) {
+    try { msgs.push(carregarTextoCSV(arq.name, await arq.text())); }
+    catch (e) { toast((e && e.message) || String(e), 'erro'); }
+  }
+  recalcularRegasHist();
+  S.hist.lidoEm = Date.now();
+  if (msgs.length && !silencioso) toast('Histórico carregado: ' + msgs.join(' · '), 'ok');
+  return msgs.length;
+}
+
+async function escolherCSV() {
+  if (window.showOpenFilePicker) {
+    try {
+      const handles = await window.showOpenFilePicker({ id: 'sit-coleta', multiple: true, types: [{ description: 'CSV da coleta (leituras.csv, eventos.csv)', accept: { 'text/csv': ['.csv'] } }] });
+      S.hist.handles = handles;
+      const arquivos = await Promise.all(handles.map((h) => h.getFile()));
+      if (await lerArquivos(arquivos)) mudarAba('historico');
+      $('#chkAcompanhar').disabled = false;
+      return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+      // sem o seletor moderno (ou bloqueado): cai no seletor clássico
+    }
+  }
+  $('#arquivoCsv').click();
+}
+
+async function releituraHist() {
+  if (!S.hist.handles.length) return;
+  try {
+    const arquivos = await Promise.all(S.hist.handles.map((h) => h.getFile()));
+    await lerArquivos(arquivos, true);
+    if (S.aba === 'historico') agendarGraficos();
+  } catch (e) {
+    // arquivo mudou no meio da leitura; tenta de novo na próxima rodada
+  }
+}
+
+/* ======================================================================
+   Exportação da sessão (mesmo formato do outputs/coleta)
+   ====================================================================== */
+function baixar(nome, texto) {
+  const url = URL.createObjectURL(new Blob([texto], { type: 'text/csv;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nome;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+function carimbo() { return isoLocal(Date.now()).replace(/[-:]/g, '').replace('T', '_').slice(0, 13); }
+function exportarLeituras() {
+  const pts = pontosDaFonte();
+  const linhas = ['recebido_em,ts,solo_bruto,solo_pct,temp_c,umid_ar_pct,rssi'];
+  const v = (x) => (x == null ? '' : String(x));
+  for (const p of pts) linhas.push([isoLocal(p.recebido), v(p.ts), v(p.solo_bruto), v(p.solo_pct), v(p.temp_c), v(p.umid_ar_pct), v(p.rssi)].join(','));
+  baixar(`leituras_painel_${carimbo()}.csv`, linhas.join('\n') + '\n');
+}
+function exportarEventos() {
+  const linhas = ['recebido_em,topico,valor'];
+  for (const r of S.regas) linhas.push([isoLocal(r.t), `${CFG.base}/bomba/estado`, 'ligada'].join(','));
+  baixar(`eventos_painel_${carimbo()}.csv`, linhas.join('\n') + '\n');
+}
+
+/* ======================================================================
+   Controles
+   ====================================================================== */
+function escolherFonte(f) {
+  S.fonte = f;
+  gravarPref('fonte', f);
+  if (f !== 'usb' && !S.mqtt.manter && S.mqtt.estado !== 'sem-lib') conectarMqtt();
+  if (f === 'usb' && S.usb.estado !== 'aberta' && !S.usb.manter && temSerial) cliqueUsb();   // o clique permite abrir o seletor de porta
+  if (f === 'usb' && !temSerial) toast('Este navegador não tem Web Serial. Use o Chrome ou o Edge no computador.', 'erro');
+  renderTudo();
+  agendarGraficos();
+}
+function mudarAba(aba) {
+  S.aba = aba;
+  $('#abaSessao').setAttribute('aria-selected', String(aba === 'sessao'));
+  $('#abaHist').setAttribute('aria-selected', String(aba === 'historico'));
+  agendarGraficos();
+}
+function mudarJanela(ms) {
+  S.janela = ms;
+  gravarPref('janela', ms);
+  document.querySelectorAll('#segJanela button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.janela) === ms)));
+  agendarGraficos();
+}
+
+function tick() {
+  renderTudo();
+  const ef = fonteEfetiva();
+  if (S.efAnterior && ef !== S.efAnterior) {
+    if (S.fonte === 'auto') {
+      toast(ef === 'mqtt' ? 'AUTO voltou para o MQTT (Wi-Fi).'
+        : S.mqtt.estado === 'conectado' ? 'AUTO passou para a USB (cabo): o MQTT ficou 90 s sem leitura.'
+        : 'AUTO passou para a USB (cabo): o MQTT está desconectado.');
+    }
+    agendarGraficos();
+  }
+  S.efAnterior = ef;
+}
+
+function init() {
+  if (CFG.teste) {
+    $('#faixaTeste').hidden = false;
+    $('#faixaTesteBase').textContent = CFG.base;
+    $('#notaBomba').textContent = 'Modo teste: o comando vai para o tópico de teste e não liga a bomba real.';
+    document.title = 'Painel SIT · TESTE';
+  }
+  $('#rotAssinatura').textContent = CFG.base + '/#';
+  $('#rotBaseRodape').textContent = CFG.base;
+  montarZonas('kSoloZonas', 'solo_pct');
+  montarZonas('kTempZonas', 'temp_c');
+  montarZonas('kUmidZonas', 'umid_ar_pct');
+  prepararLogsVazios();
+
+  const fUrl = P.get('fonte');
+  S.fonte = ['auto', 'mqtt', 'usb'].includes(fUrl) ? fUrl : lerPref('fonte', 'auto');
+  if (!['auto', 'mqtt', 'usb'].includes(S.fonte)) S.fonte = 'auto';
+  const j = Number(lerPref('janela', 3600e3));
+  mudarJanela([900e3, 3600e3, 21600e3, 0].includes(j) ? j : 3600e3);
+  $('#segundos').value = String(clampSeg(lerPref('segundos', 1)));
+  atualizarRotuloIrrigar();
+
+  const n = restaurarSessao();
+  if (n) toast(`Sessão anterior restaurada: ${n} leituras guardadas neste navegador.`);
+
+  document.querySelectorAll('#segFonte button').forEach((b) => b.addEventListener('click', () => escolherFonte(b.dataset.fonte)));
+  document.querySelectorAll('#segJanela button').forEach((b) => b.addEventListener('click', () => mudarJanela(Number(b.dataset.janela))));
+  $('#btnMqtt').addEventListener('click', () => (S.mqtt.manter ? pararMqtt(true) : conectarMqtt()));
+  $('#btnUsb').addEventListener('click', cliqueUsb);
+  $('#formIrrigar').addEventListener('submit', (e) => { e.preventDefault(); const v = clampSeg($('#segundos').value); $('#segundos').value = String(v); gravarPref('segundos', v); irrigar(v); });
+  $('#segundos').addEventListener('input', atualizarRotuloIrrigar);
+  $('#segundos').addEventListener('change', () => { const v = clampSeg($('#segundos').value); $('#segundos').value = String(v); atualizarRotuloIrrigar(); gravarPref('segundos', v); });
+  $('#btnParar').addEventListener('click', () => irrigar(0));
+  $('#abaSessao').addEventListener('click', () => mudarAba('sessao'));
+  $('#abaHist').addEventListener('click', () => { mudarAba('historico'); if (!S.hist.leituras.length) escolherCSV(); });
+  $('#btnCsv').addEventListener('click', escolherCSV);
+  $('#arquivoCsv').addEventListener('change', async (e) => {
+    const arquivos = [...e.target.files];
+    e.target.value = '';
+    if (!arquivos.length) return;
+    S.hist.handles = [];
+    $('#chkAcompanhar').checked = false;
+    $('#chkAcompanhar').disabled = true;
+    clearInterval(S.hist.timer);
+    if (await lerArquivos(arquivos)) mudarAba('historico');
+  });
+  $('#chkAcompanhar').addEventListener('change', (e) => {
+    clearInterval(S.hist.timer);
+    if (e.target.checked) { S.hist.timer = setInterval(releituraHist, 15000); releituraHist(); toast('Acompanhando o arquivo: relê a cada 15 s.'); }
+  });
+  $('#btnTabela').addEventListener('click', () => {
+    S.tabela = !S.tabela;
+    $('#btnTabela').setAttribute('aria-pressed', String(S.tabela));
+    $('#btnTabela').textContent = S.tabela ? 'Esconder tabela' : 'Ver tabela';
+    $('#tabelaWrap').hidden = !S.tabela;
+    agendarGraficos();
+  });
+  $('#btnExpLeit').addEventListener('click', exportarLeituras);
+  $('#btnExpEv').addEventListener('click', exportarEventos);
+  $('#btnLimparSessao').addEventListener('click', () => {
+    if (!confirm('Apagar as leituras e regas desta sessão (só do painel; os CSV da coleta não mudam)?')) return;
+    S.pontos = [];
+    S.regas = [];
+    salvarSessao();
+    agendarGraficos();
+  });
+  document.querySelectorAll('[data-limpar]').forEach((b) => b.addEventListener('click', () => { $('#' + b.dataset.limpar).textContent = ''; prepararLogsVazios(); }));
+  GRAFS.forEach((g) => prepararHover(document.getElementById(g.id)));
+  if ('ResizeObserver' in window) new ResizeObserver(() => agendarGraficos()).observe($('#gradeGraf'));
+  else window.addEventListener('resize', agendarGraficos);
+  window.addEventListener('pagehide', salvarSessao);
+
+  if (temSerial) {
+    navigator.serial.addEventListener('connect', (e) => {
+      if (S.usb.manter && S.usb.estado !== 'aberta' && (e.target === S.usb.porta || mesmoDispositivo(e.target, S.usb.porta))) abrirPorta(e.target, false);
+    });
+    navigator.serial.addEventListener('disconnect', (e) => {
+      if (e.target === S.usb.porta) logUsb('dispositivo USB desconectado', 'aviso');
+    });
+    if (lerPref('usbAuto', false) && S.fonte !== 'mqtt') {
+      navigator.serial.getPorts().then((ps) => { if (ps.length) abrirPorta(ps[0], false); }).catch(() => {});
+    }
+  } else {
+    S.usb.estado = 'indisponivel';
+  }
+
+  S.mqtt.idx = Math.max(0, CFG.brokers.indexOf(lerPref('brokerOk', '')));
+  S.mqtt.estado = 'conectando';
+  esperarLibMqtt((ok) => {
+    if (ok) conectarMqtt();
+    else {
+      S.mqtt.estado = 'sem-lib';
+      logSistemaMqtt('a biblioteca mqtt.js não carregou (sem internet?). A USB continua funcionando.');
+      renderTudo();
+    }
+  });
+  window.addEventListener('online', () => { if (S.mqtt.manter && S.mqtt.estado !== 'conectado') { clearTimeout(S.mqtt.timer); conectarMqtt(); } });
+
+  setInterval(tick, 1000);
+  setInterval(() => { if (S.aba === 'sessao') agendarGraficos(); }, 15000);
+  renderTudo();
+  agendarGraficos();
+}
+
+// Ponto de acesso para testes e depuração no console
+window.SIT = { S, CFG, processarLinhaSerial, tratarMqtt, carregarTextoCSV, classificar, fonteEfetiva, canalComando, irrigar };
+
+init();
+})();
+</script>
+</body>
+</html>

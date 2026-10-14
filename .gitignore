@@ -11,3 +11,8 @@ data/**/*.md
 
 # Ignore pycache
 *__pycache__
+# Credenciais do firmware (copiar de secrets.example.h)
+codes/firmware/**/secrets.h
+
+# Binários compilados do Arduino IDE
+codes/firmware/**/build/

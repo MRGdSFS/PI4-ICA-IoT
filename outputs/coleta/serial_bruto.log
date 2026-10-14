@@ -1,0 +1,272 @@
+2026-10-13T21:11:26 ............................. falhou (seguindo e tentando de novo em segundo plano)
+2026-10-13T21:11:35 {"ts":null,"solo_bruto":2645,"solo_pct":40,"temp_c":25.1,"umid_ar_pct":67.5,"rssi":0}
+2026-10-13T21:11:35 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:12:05 {"ts":null,"solo_bruto":2628,"solo_pct":41,"temp_c":25.1,"umid_ar_pct":67.5,"rssi":0}
+2026-10-13T21:12:05 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:12:35 {"ts":null,"solo_bruto":2624,"solo_pct":41,"temp_c":25.1,"umid_ar_pct":67.5,"rssi":0}
+2026-10-13T21:12:35 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:13:05 {"ts":null,"solo_bruto":2622,"solo_pct":41,"temp_c":25.1,"umid_ar_pct":67.6,"rssi":0}
+2026-10-13T21:13:05 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:15:17 ....................................... falhou (seguindo e tentando de novo em segundo plano)
+2026-10-13T21:15:17 Bomba LIGADA por 3 s
+2026-10-13T21:15:32 ESP-ROM:esp32s3-20210327
+2026-10-13T21:15:32 Build:Mar 27 2021
+2026-10-13T21:15:32 rst:0x7 (TG0WDT_SYS_RST),boot:0x8 (SPI_FAST_FLASH_BOOT)
+2026-10-13T21:15:32 Saved PC:0x4037a12e
+2026-10-13T21:15:32 SPIWP:0xee
+2026-10-13T21:15:32 mode:DIO, clock div:1
+2026-10-13T21:15:32 load:0x3fce2820,len:0x10cc
+2026-10-13T21:15:32 load:0x403c8700,len:0xc2c
+2026-10-13T21:15:32 load:0x403cb700,len:0x30c0
+2026-10-13T21:15:32 entry 0x403c88b8
+2026-10-13T21:15:33 
+2026-10-13T21:15:33 SIT - estação iniciada
+2026-10-13T21:15:53 Conectando ao Wi-Fi nome-da-rede........................................ falhou (seguindo e tentando de novo em segundo plano)
+2026-10-13T21:16:02 {"ts":null,"solo_bruto":2236,"solo_pct":58,"temp_c":25.1,"umid_ar_pct":63.8,"rssi":0}
+2026-10-13T21:16:02 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:16:32 {"ts":null,"solo_bruto":1875,"solo_pct":74,"temp_c":25.0,"umid_ar_pct":63.2,"rssi":0}
+2026-10-13T21:16:32 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:17:02 {"ts":null,"solo_bruto":1724,"solo_pct":81,"temp_c":25.0,"umid_ar_pct":64.5,"rssi":0}
+2026-10-13T21:17:02 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:17:08 Bomba LIGADA por 3 s
+2026-10-13T21:17:23 ESP-ROM:esp32s3-20210327
+2026-10-13T21:17:23 Build:Mar 27 2021
+2026-10-13T21:17:23 rst:0x7 (TG0WDT_SYS_RST),boot:0x8 (SPI_FAST_FLASH_BOOT)
+2026-10-13T21:17:23 Saved PC:0x400478f3
+2026-10-13T21:17:23 SPIWP:0xee
+2026-10-13T21:17:23 mode:DIO, clock div:1
+2026-10-13T21:17:23 load:0x3fce2820,len:0x10cc
+2026-10-13T21:17:23 load:0x403c8700,len:0xc2c
+2026-10-13T21:17:23 load:0x403cb700,len:0x30c0
+2026-10-13T21:17:23 entry 0x403c88b8
+2026-10-13T21:17:25 
+2026-10-13T21:17:25 SIT - estação iniciada
+2026-10-13T21:17:45 Conectando ao Wi-Fi nome-da-rede........................................ falhou (seguindo e tentando de novo em segundo plano)
+2026-10-13T21:17:54 {"ts":null,"solo_bruto":1562,"solo_pct":88,"temp_c":25.0,"umid_ar_pct":62.2,"rssi":0}
+2026-10-13T21:17:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:18:24 {"ts":null,"solo_bruto":1551,"solo_pct":88,"temp_c":24.9,"umid_ar_pct":60.6,"rssi":0}
+2026-10-13T21:18:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:18:54 {"ts":null,"solo_bruto":1543,"solo_pct":89,"temp_c":24.8,"umid_ar_pct":61.9,"rssi":0}
+2026-10-13T21:18:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:19:24 {"ts":null,"solo_bruto":1530,"solo_pct":89,"temp_c":24.8,"umid_ar_pct":62.4,"rssi":0}
+2026-10-13T21:19:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:19:54 {"ts":null,"solo_bruto":1526,"solo_pct":90,"temp_c":24.8,"umid_ar_pct":63.5,"rssi":0}
+2026-10-13T21:19:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:20:24 {"ts":null,"solo_bruto":1522,"solo_pct":90,"temp_c":24.8,"umid_ar_pct":64.1,"rssi":0}
+2026-10-13T21:20:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:20:54 {"ts":null,"solo_bruto":1517,"solo_pct":90,"temp_c":24.8,"umid_ar_pct":65.0,"rssi":0}
+2026-10-13T21:20:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:21:24 {"ts":null,"solo_bruto":1517,"solo_pct":90,"temp_c":24.8,"umid_ar_pct":67.5,"rssi":0}
+2026-10-13T21:21:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:21:54 {"ts":null,"solo_bruto":1517,"solo_pct":90,"temp_c":24.8,"umid_ar_pct":69.1,"rssi":0}
+2026-10-13T21:21:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:22:24 {"ts":null,"solo_bruto":1516,"solo_pct":90,"temp_c":24.9,"umid_ar_pct":69.0,"rssi":0}
+2026-10-13T21:22:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:22:54 {"ts":null,"solo_bruto":1515,"solo_pct":90,"temp_c":25.0,"umid_ar_pct":69.5,"rssi":0}
+2026-10-13T21:22:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:23:24 {"ts":null,"solo_bruto":1513,"solo_pct":90,"temp_c":25.1,"umid_ar_pct":70.3,"rssi":0}
+2026-10-13T21:23:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:23:54 {"ts":null,"solo_bruto":1512,"solo_pct":90,"temp_c":25.1,"umid_ar_pct":71.1,"rssi":0}
+2026-10-13T21:23:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:24:24 {"ts":null,"solo_bruto":1511,"solo_pct":90,"temp_c":25.2,"umid_ar_pct":70.1,"rssi":0}
+2026-10-13T21:24:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:24:54 {"ts":null,"solo_bruto":1510,"solo_pct":90,"temp_c":25.3,"umid_ar_pct":70.1,"rssi":0}
+2026-10-13T21:24:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:25:24 {"ts":null,"solo_bruto":1510,"solo_pct":90,"temp_c":25.3,"umid_ar_pct":69.8,"rssi":0}
+2026-10-13T21:25:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:25:54 {"ts":null,"solo_bruto":1509,"solo_pct":90,"temp_c":25.3,"umid_ar_pct":68.5,"rssi":0}
+2026-10-13T21:25:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:26:24 {"ts":null,"solo_bruto":1509,"solo_pct":90,"temp_c":25.3,"umid_ar_pct":68.3,"rssi":0}
+2026-10-13T21:26:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:26:54 {"ts":null,"solo_bruto":1507,"solo_pct":90,"temp_c":25.3,"umid_ar_pct":67.9,"rssi":0}
+2026-10-13T21:26:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:27:24 {"ts":null,"solo_bruto":1506,"solo_pct":90,"temp_c":25.3,"umid_ar_pct":68.1,"rssi":0}
+2026-10-13T21:27:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:27:54 {"ts":null,"solo_bruto":1506,"solo_pct":90,"temp_c":25.2,"umid_ar_pct":67.8,"rssi":0}
+2026-10-13T21:27:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:28:24 {"ts":null,"solo_bruto":1505,"solo_pct":90,"temp_c":25.2,"umid_ar_pct":67.8,"rssi":0}
+2026-10-13T21:28:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:28:54 {"ts":null,"solo_bruto":1503,"solo_pct":91,"temp_c":25.2,"umid_ar_pct":68.7,"rssi":0}
+2026-10-13T21:28:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:29:24 {"ts":null,"solo_bruto":1502,"solo_pct":91,"temp_c":25.2,"umid_ar_pct":68.0,"rssi":0}
+2026-10-13T21:29:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:29:54 {"ts":null,"solo_bruto":1502,"solo_pct":91,"temp_c":25.2,"umid_ar_pct":67.9,"rssi":0}
+2026-10-13T21:29:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:30:24 {"ts":null,"solo_bruto":1502,"solo_pct":91,"temp_c":25.2,"umid_ar_pct":67.1,"rssi":0}
+2026-10-13T21:30:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:30:54 {"ts":null,"solo_bruto":1502,"solo_pct":91,"temp_c":25.1,"umid_ar_pct":67.6,"rssi":0}
+2026-10-13T21:30:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:31:24 {"ts":null,"solo_bruto":1501,"solo_pct":91,"temp_c":25.1,"umid_ar_pct":66.7,"rssi":0}
+2026-10-13T21:31:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:31:54 {"ts":null,"solo_bruto":1500,"solo_pct":91,"temp_c":25.0,"umid_ar_pct":67.0,"rssi":0}
+2026-10-13T21:31:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:32:24 {"ts":null,"solo_bruto":1500,"solo_pct":91,"temp_c":25.0,"umid_ar_pct":65.0,"rssi":0}
+2026-10-13T21:32:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:32:54 {"ts":null,"solo_bruto":1500,"solo_pct":91,"temp_c":24.9,"umid_ar_pct":66.2,"rssi":0}
+2026-10-13T21:32:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:33:24 {"ts":null,"solo_bruto":1499,"solo_pct":91,"temp_c":24.8,"umid_ar_pct":64.2,"rssi":0}
+2026-10-13T21:33:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:33:54 {"ts":null,"solo_bruto":1498,"solo_pct":91,"temp_c":24.8,"umid_ar_pct":65.8,"rssi":0}
+2026-10-13T21:33:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:34:24 {"ts":null,"solo_bruto":1499,"solo_pct":91,"temp_c":24.8,"umid_ar_pct":65.9,"rssi":0}
+2026-10-13T21:34:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:34:54 {"ts":null,"solo_bruto":1498,"solo_pct":91,"temp_c":24.8,"umid_ar_pct":66.6,"rssi":0}
+2026-10-13T21:34:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:35:24 {"ts":null,"solo_bruto":1498,"solo_pct":91,"temp_c":24.8,"umid_ar_pct":67.1,"rssi":0}
+2026-10-13T21:35:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:35:54 {"ts":null,"solo_bruto":1497,"solo_pct":91,"temp_c":24.7,"umid_ar_pct":67.1,"rssi":0}
+2026-10-13T21:35:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:36:24 {"ts":null,"solo_bruto":1497,"solo_pct":91,"temp_c":24.7,"umid_ar_pct":67.8,"rssi":0}
+2026-10-13T21:36:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:36:54 {"ts":null,"solo_bruto":1497,"solo_pct":91,"temp_c":24.7,"umid_ar_pct":68.1,"rssi":0}
+2026-10-13T21:36:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:37:24 {"ts":null,"solo_bruto":1498,"solo_pct":91,"temp_c":24.7,"umid_ar_pct":68.1,"rssi":0}
+2026-10-13T21:37:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:37:54 {"ts":null,"solo_bruto":1498,"solo_pct":91,"temp_c":24.7,"umid_ar_pct":67.9,"rssi":0}
+2026-10-13T21:37:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:38:24 {"ts":null,"solo_bruto":1498,"solo_pct":91,"temp_c":24.7,"umid_ar_pct":66.2,"rssi":0}
+2026-10-13T21:38:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:38:54 {"ts":null,"solo_bruto":1497,"solo_pct":91,"temp_c":24.6,"umid_ar_pct":65.5,"rssi":0}
+2026-10-13T21:38:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:39:24 {"ts":null,"solo_bruto":1498,"solo_pct":91,"temp_c":24.5,"umid_ar_pct":64.4,"rssi":0}
+2026-10-13T21:39:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:39:54 {"ts":null,"solo_bruto":1498,"solo_pct":91,"temp_c":24.6,"umid_ar_pct":64.3,"rssi":0}
+2026-10-13T21:39:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:40:24 {"ts":null,"solo_bruto":1497,"solo_pct":91,"temp_c":24.5,"umid_ar_pct":63.7,"rssi":0}
+2026-10-13T21:40:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:40:54 {"ts":null,"solo_bruto":1496,"solo_pct":91,"temp_c":24.4,"umid_ar_pct":63.1,"rssi":0}
+2026-10-13T21:40:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:41:24 {"ts":null,"solo_bruto":1497,"solo_pct":91,"temp_c":24.4,"umid_ar_pct":65.3,"rssi":0}
+2026-10-13T21:41:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:41:54 {"ts":null,"solo_bruto":1496,"solo_pct":91,"temp_c":24.4,"umid_ar_pct":65.8,"rssi":0}
+2026-10-13T21:41:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:42:24 {"ts":null,"solo_bruto":1496,"solo_pct":91,"temp_c":24.4,"umid_ar_pct":67.2,"rssi":0}
+2026-10-13T21:42:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:42:54 {"ts":null,"solo_bruto":1495,"solo_pct":91,"temp_c":24.5,"umid_ar_pct":68.3,"rssi":0}
+2026-10-13T21:42:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:43:24 {"ts":null,"solo_bruto":1495,"solo_pct":91,"temp_c":24.5,"umid_ar_pct":70.1,"rssi":0}
+2026-10-13T21:43:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:43:54 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":24.6,"umid_ar_pct":71.5,"rssi":0}
+2026-10-13T21:43:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:44:24 {"ts":null,"solo_bruto":1495,"solo_pct":91,"temp_c":24.7,"umid_ar_pct":72.3,"rssi":0}
+2026-10-13T21:44:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:44:54 {"ts":null,"solo_bruto":1495,"solo_pct":91,"temp_c":24.8,"umid_ar_pct":72.4,"rssi":0}
+2026-10-13T21:44:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:45:24 {"ts":null,"solo_bruto":1492,"solo_pct":91,"temp_c":24.9,"umid_ar_pct":73.7,"rssi":0}
+2026-10-13T21:45:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:45:54 {"ts":null,"solo_bruto":1495,"solo_pct":91,"temp_c":25.0,"umid_ar_pct":72.2,"rssi":0}
+2026-10-13T21:45:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:46:24 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":25.1,"umid_ar_pct":73.6,"rssi":0}
+2026-10-13T21:46:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:46:54 {"ts":null,"solo_bruto":1495,"solo_pct":91,"temp_c":25.2,"umid_ar_pct":74.3,"rssi":0}
+2026-10-13T21:46:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:47:24 {"ts":null,"solo_bruto":1496,"solo_pct":91,"temp_c":25.3,"umid_ar_pct":74.5,"rssi":0}
+2026-10-13T21:47:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:47:54 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":25.4,"umid_ar_pct":74.5,"rssi":0}
+2026-10-13T21:47:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:48:24 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":25.5,"umid_ar_pct":73.5,"rssi":0}
+2026-10-13T21:48:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:48:54 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":25.5,"umid_ar_pct":72.8,"rssi":0}
+2026-10-13T21:48:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:49:24 {"ts":null,"solo_bruto":1495,"solo_pct":91,"temp_c":25.7,"umid_ar_pct":74.0,"rssi":0}
+2026-10-13T21:49:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:49:54 {"ts":null,"solo_bruto":1495,"solo_pct":91,"temp_c":25.7,"umid_ar_pct":73.4,"rssi":0}
+2026-10-13T21:49:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:50:24 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":25.7,"umid_ar_pct":72.0,"rssi":0}
+2026-10-13T21:50:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:50:54 {"ts":null,"solo_bruto":1495,"solo_pct":91,"temp_c":25.8,"umid_ar_pct":73.9,"rssi":0}
+2026-10-13T21:50:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:51:24 {"ts":null,"solo_bruto":1493,"solo_pct":91,"temp_c":25.9,"umid_ar_pct":72.8,"rssi":0}
+2026-10-13T21:51:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:51:54 {"ts":null,"solo_bruto":1495,"solo_pct":91,"temp_c":25.9,"umid_ar_pct":73.4,"rssi":0}
+2026-10-13T21:51:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:52:24 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.0,"umid_ar_pct":73.2,"rssi":0}
+2026-10-13T21:52:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:52:54 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.0,"umid_ar_pct":73.6,"rssi":0}
+2026-10-13T21:52:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:53:24 {"ts":null,"solo_bruto":1495,"solo_pct":91,"temp_c":26.1,"umid_ar_pct":72.8,"rssi":0}
+2026-10-13T21:53:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:53:54 {"ts":null,"solo_bruto":1492,"solo_pct":91,"temp_c":26.1,"umid_ar_pct":73.2,"rssi":0}
+2026-10-13T21:53:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:54:24 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.2,"umid_ar_pct":72.7,"rssi":0}
+2026-10-13T21:54:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:54:54 {"ts":null,"solo_bruto":1493,"solo_pct":91,"temp_c":26.2,"umid_ar_pct":72.9,"rssi":0}
+2026-10-13T21:54:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:55:24 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.3,"umid_ar_pct":72.6,"rssi":0}
+2026-10-13T21:55:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:55:54 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.3,"umid_ar_pct":72.6,"rssi":0}
+2026-10-13T21:55:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:56:24 {"ts":null,"solo_bruto":1493,"solo_pct":91,"temp_c":26.3,"umid_ar_pct":72.8,"rssi":0}
+2026-10-13T21:56:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:56:54 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.4,"umid_ar_pct":73.0,"rssi":0}
+2026-10-13T21:56:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:57:24 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.4,"umid_ar_pct":72.1,"rssi":0}
+2026-10-13T21:57:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:57:54 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.4,"umid_ar_pct":73.1,"rssi":0}
+2026-10-13T21:57:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:58:24 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.5,"umid_ar_pct":73.3,"rssi":0}
+2026-10-13T21:58:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:58:54 {"ts":null,"solo_bruto":1493,"solo_pct":91,"temp_c":26.5,"umid_ar_pct":73.2,"rssi":0}
+2026-10-13T21:58:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:59:24 {"ts":null,"solo_bruto":1493,"solo_pct":91,"temp_c":26.5,"umid_ar_pct":73.2,"rssi":0}
+2026-10-13T21:59:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T21:59:54 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.6,"umid_ar_pct":72.2,"rssi":0}
+2026-10-13T21:59:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:00:24 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.6,"umid_ar_pct":73.2,"rssi":0}
+2026-10-13T22:00:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:00:54 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.6,"umid_ar_pct":73.2,"rssi":0}
+2026-10-13T22:00:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:01:24 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.6,"umid_ar_pct":73.4,"rssi":0}
+2026-10-13T22:01:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:01:54 {"ts":null,"solo_bruto":1493,"solo_pct":91,"temp_c":26.7,"umid_ar_pct":73.5,"rssi":0}
+2026-10-13T22:01:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:02:24 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.7,"umid_ar_pct":72.6,"rssi":0}
+2026-10-13T22:02:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:02:54 {"ts":null,"solo_bruto":1493,"solo_pct":91,"temp_c":26.7,"umid_ar_pct":72.9,"rssi":0}
+2026-10-13T22:02:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:03:24 {"ts":null,"solo_bruto":1494,"solo_pct":91,"temp_c":26.7,"umid_ar_pct":73.1,"rssi":0}
+2026-10-13T22:03:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:03:54 {"ts":null,"solo_bruto":1491,"solo_pct":91,"temp_c":26.7,"umid_ar_pct":73.0,"rssi":0}
+2026-10-13T22:03:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:04:24 {"ts":null,"solo_bruto":1493,"solo_pct":91,"temp_c":26.8,"umid_ar_pct":73.2,"rssi":0}
+2026-10-13T22:04:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:04:54 {"ts":null,"solo_bruto":1493,"solo_pct":91,"temp_c":26.8,"umid_ar_pct":73.2,"rssi":0}
+2026-10-13T22:04:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:05:24 {"ts":null,"solo_bruto":1492,"solo_pct":91,"temp_c":26.8,"umid_ar_pct":72.9,"rssi":0}
+2026-10-13T22:05:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:05:54 {"ts":null,"solo_bruto":1493,"solo_pct":91,"temp_c":26.8,"umid_ar_pct":73.5,"rssi":0}
+2026-10-13T22:05:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:06:24 {"ts":null,"solo_bruto":1492,"solo_pct":91,"temp_c":26.8,"umid_ar_pct":73.7,"rssi":0}
+2026-10-13T22:06:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:06:54 {"ts":null,"solo_bruto":1492,"solo_pct":91,"temp_c":26.8,"umid_ar_pct":73.6,"rssi":0}
+2026-10-13T22:06:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:07:24 {"ts":null,"solo_bruto":1492,"solo_pct":91,"temp_c":26.9,"umid_ar_pct":73.9,"rssi":0}
+2026-10-13T22:07:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:07:54 {"ts":null,"solo_bruto":1490,"solo_pct":91,"temp_c":26.9,"umid_ar_pct":73.8,"rssi":0}
+2026-10-13T22:07:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:08:24 {"ts":null,"solo_bruto":1492,"solo_pct":91,"temp_c":26.9,"umid_ar_pct":73.4,"rssi":0}
+2026-10-13T22:08:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:08:54 {"ts":null,"solo_bruto":1491,"solo_pct":91,"temp_c":26.9,"umid_ar_pct":73.8,"rssi":0}
+2026-10-13T22:08:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:09:24 {"ts":null,"solo_bruto":1491,"solo_pct":91,"temp_c":26.9,"umid_ar_pct":73.7,"rssi":0}
+2026-10-13T22:09:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:09:54 {"ts":null,"solo_bruto":1491,"solo_pct":91,"temp_c":26.9,"umid_ar_pct":72.8,"rssi":0}
+2026-10-13T22:09:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:10:24 {"ts":null,"solo_bruto":1493,"solo_pct":91,"temp_c":26.9,"umid_ar_pct":72.9,"rssi":0}
+2026-10-13T22:10:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:10:54 {"ts":null,"solo_bruto":1491,"solo_pct":91,"temp_c":26.9,"umid_ar_pct":73.7,"rssi":0}
+2026-10-13T22:10:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:11:24 {"ts":null,"solo_bruto":1490,"solo_pct":91,"temp_c":27.0,"umid_ar_pct":73.6,"rssi":0}
+2026-10-13T22:11:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:11:54 {"ts":null,"solo_bruto":1492,"solo_pct":91,"temp_c":27.0,"umid_ar_pct":72.7,"rssi":0}
+2026-10-13T22:11:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:12:24 {"ts":null,"solo_bruto":1491,"solo_pct":91,"temp_c":27.0,"umid_ar_pct":73.9,"rssi":0}
+2026-10-13T22:12:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:12:54 {"ts":null,"solo_bruto":1492,"solo_pct":91,"temp_c":27.0,"umid_ar_pct":74.2,"rssi":0}
+2026-10-13T22:12:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:13:24 {"ts":null,"solo_bruto":1491,"solo_pct":91,"temp_c":27.0,"umid_ar_pct":74.0,"rssi":0}
+2026-10-13T22:13:24 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:13:54 {"ts":null,"solo_bruto":1491,"solo_pct":91,"temp_c":27.1,"umid_ar_pct":73.4,"rssi":0}
+2026-10-13T22:13:54 (MQTT desconectado, leitura não enviada)
+2026-10-13T22:14:24 {"ts":null,"solo_bruto":1492,"solo_pct":91,"temp_c":27.0,"umid_ar_pct":73.7,"rssi":0}
+2026-10-13T22:14:24 (MQTT desconectado, leitura não enviada)

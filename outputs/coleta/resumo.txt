@@ -1,0 +1,11 @@
+Período: 13/10/2026 21:11 a 13/10/2026 22:14 (1.0 h)
+Leituras recebidas por MQTT: 121 de 126 esperadas (intervalo 30 s), perda de 4.0%
+Irrigações registradas: 2 pela bomba, 0 manuais
+Leituras do AM2302 com falha (null): 0
+
+variável                   mín   média     máx
+umidade do solo (%)       40.0    88.6    91.0
+solo, valor bruto       1490.0  1547.9  2645.0
+temperatura (°C)          24.4    25.6    27.1
+umidade do ar (%)         60.6    70.0    74.5
+RSSI (dBm)                 0.0     0.0     0.0
