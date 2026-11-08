@@ -60,12 +60,12 @@ Parâmetros opcionais na URL:
 - **Sinal Wi-Fi (RSSI)** em dBm com barras e qualidade. O valor 0 significa estação sem Wi-Fi.
 - **Bomba**:
   - estado (ligada/desligada, com contagem regressiva) e última rega;
-  - campo de **1 a 5 s** e o botão **"Irrigar N s"**, que publica o número em `sit/ufc-pi4/estacao01/bomba/cmd` (QoS 0, sem retenção) ou envia pela serial, conforme a fonte;
+  - campo de **1 a 3 s** e o botão **"Irrigar N s"**, que publica o número em `sit/ufc-pi4/estacao01/bomba/cmd` (QoS 0, sem retenção) ou envia pela serial, conforme a fonte;
   - "Parar" envia 0;
   - o painel avisa quando a estação confirma, pelo `bomba/estado` ou pela linha da USB, e também quando não confirma em 8 s;
-  - o firmware limita cada acionamento a 5 s.
+  - o firmware limita cada acionamento a 3 s (na prática, use 1 s).
 - **Gráficos**:
-  - umidade do solo, temperatura, umidade do ar e RSSI, com as **faixas do tomateiro** (contrato, seção 7) em verde (ideal), amarelo (atenção) e vermelho claro (alerta);
+  - umidade do solo, temperatura, umidade do ar e RSSI, com as **faixas do tomateiro** (especificação técnica, seção 7) em verde (ideal), amarelo (atenção) e vermelho claro (alerta);
   - as regas aparecem como gota e linha vertical;
   - passe o mouse (ou use as setas do teclado) para ver o valor, a hora, o valor bruto e por onde chegou;
   - o intervalo vai de 15 min a "tudo";
@@ -102,7 +102,7 @@ Depois abra `codes/dashboard/index.html?base=sit/ufc-pi4/teste-dashboard`.
    - pôr o SSID e a senha do hotspot do celular (2,4 GHz) e regravar (dono: firmware);
    - conferir no painel: canal MQTT conectado, estação "Online" e uma leitura a cada 30 s.
 2. **Rede**:
-   - a estação usa a porta 1883, bloqueada na rede de casa. No hotspot do celular ela costuma passar;
+   - a estação usa a porta 8883 (MQTT com TLS); redes de universidade e de casa às vezes bloqueiam as portas do broker. No hotspot do celular costuma passar;
    - teste antes: se o painel mostrar "Online" e leituras chegando, está ok.
 3. Notebook com internet (hotspot ou rede do campus). O painel cai sozinho para a porta 8000 se a 8884 estiver bloqueada.
 4. Abrir o painel uns minutos antes, para os gráficos da sessão já terem pontos. Deixar `leituras.csv` e `eventos.csv` à mão para o histórico.
@@ -141,12 +141,12 @@ Plano B sem internet: modo "Cabo · USB". Os dados vêm pelo cabo e tudo funcion
 
 ## 8. Problemas conhecidos e cuidados
 
-- **Broker público:** qualquer pessoa pode ler e publicar nestes tópicos, inclusive em `bomba/cmd`. A trava de 5 s do firmware limita o estrago. Na v2: broker com usuário e senha, com TLS (ThingsBoard ou HiveMQ Cloud).
-- Depois de cada acionamento da bomba, a ESP reinicia (reset TG0WDT, contrato).
+- **Broker público:** qualquer pessoa pode ler e publicar nestes tópicos, inclusive em `bomba/cmd`. A trava de 3 s do firmware limita o estrago. Próximo passo: broker com usuário e senha (HiveMQ Cloud ou Mosquitto próprio).
+- Depois de cada acionamento da bomba, a ESP reinicia (reset TG0WDT).
   - No `serial_bruto.log` de 13/10 não aparece a linha "Bomba desligada" entre o "Bomba LIGADA por 3 s" e o reinício.
   - Vale o firmware/hardware conferir se a bomba ficou ligada até o reset. Isso explicaria o vaso encharcado.
 - Sem NTP (sem Wi-Fi) o `ts` vem `null`; aí o painel usa a hora de chegada, igual ao `graficos.py`.
-- O `coletor_mqtt.py` usa a porta 1883, que não passa na rede de casa.
+- O `coletor_mqtt.py` usa a mesma porta do firmware (8883, TLS). Se a rede bloquear, use o `coletor_serial.py`.
 
 ## 9. O que foi testado (14/10, Chrome headless e paho-mqtt, só no tópico de teste)
 
@@ -169,12 +169,3 @@ Plano B sem internet: modo "Cabo · USB". Os dados vêm pelo cabo e tudo funcion
   - 1440 px e 390 px (celular) sem rolagem horizontal;
   - JS validado com `node --check`; nenhum erro de JavaScript.
 - **Não testado:** abrir a COM11 de verdade pelo painel, porque o teste automático não escolhe porta. A bomba real não foi acionada.
-
-## 10. ThingsBoard (opção futura)
-
-1. Criar no ThingsBoard o dispositivo `SIT-estacao01`, com o perfil `SIT Estacao Tomate`, e copiar o access token.
-2. Escolher como os dados chegam:
-   - **ponte, sem mexer no firmware:** um script Python, no molde do `coletor_mqtt.py`, assina `sit/ufc-pi4/estacao01/#` no HiveMQ e republica cada leitura em `v1/devices/me/telemetry` no ThingsBoard, com usuário = token;
-   - **firmware direto:** trocar o firmware para os tópicos do ThingsBoard (contrato, seção 4).
-3. Montar o dashboard do ThingsBoard com cartões, séries temporais e um botão RPC (`irrigar`).
-4. Pôr as faixas do tomateiro (seção 7) como regras de alarme no perfil do dispositivo.

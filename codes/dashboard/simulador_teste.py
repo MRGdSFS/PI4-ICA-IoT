@@ -40,7 +40,7 @@ BASE_REAL = "sit/ufc-pi4/estacao01"
 BASE_TESTE = "sit/ufc-pi4/teste-dashboard"
 HOST = "broker.hivemq.com"
 SOLO_SECO, SOLO_MOLHADO = 3560, 1300  # mesma calibração do firmware
-BOMBA_MAX_S = 5
+BOMBA_MAX_S = 3
 
 
 def criar_cliente(porta, base):

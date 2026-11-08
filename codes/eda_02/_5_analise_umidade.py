@@ -33,7 +33,7 @@ def preparacao(soil):
 def estatisticas_gerais(soil_analysis):
     estatisticas_gerais = (soil_analysis["soil_moisture"].describe())
     print(estatisticas_gerais.to_string())
-    estatisticas_gerais.to_frame(name="soil_moisture").to_csv(OUTPUT_DIR / "05_estatisticas_umidade_geral")
+    estatisticas_gerais.to_frame(name="soil_moisture").to_csv(OUTPUT_DIR / "05_estatisticas_umidade_geral.csv")
 
 def estatisticas_por_linha(soil_analysis):
     print("\nEstatísticas por linha:")

@@ -6,12 +6,13 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-DATA_DIR = (
-BASE_DIR
-/ "data"
-/ "IoT Dataset from an Evolving Tomato Cultivation Te"
-/ "IoT Dataset from an Evolving Tomato Cultivation Te"
-)
+NOME_DATASET = "IoT Dataset from an Evolving Tomato Cultivation Te"
+
+# O zip em data/ extrai em data/<NOME_DATASET>/. Se o extrator criou uma pasta extra
+# (data/<NOME_DATASET>/<NOME_DATASET>/), usa a interna.
+DATA_DIR = BASE_DIR / "data" / NOME_DATASET
+if (DATA_DIR / NOME_DATASET).is_dir():
+    DATA_DIR = DATA_DIR / NOME_DATASET
 
 OUTPUT_DIR = BASE_DIR / "outputs" / "eda02"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

@@ -26,7 +26,7 @@ import paho.mqtt.client as mqtt
 # ============================================================
 
 MQTT_HOST = "broker.hivemq.com"
-MQTT_PORTA = 1883
+MQTT_PORTA = 8883  # TLS, igual ao firmware (secrets.h); a 1883 sem criptografia também funciona no HiveMQ
 TOPICO_BASE = "sit/ufc-pi4/estacao01"
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -80,6 +80,8 @@ def main():
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
     client.on_connect = ao_conectar
     client.on_message = ao_receber
+    if MQTT_PORTA in (8883, 8884):
+        client.tls_set()  # certificados do sistema
     client.connect(MQTT_HOST, MQTT_PORTA, keepalive=60)
     print(f"Gravando em {OUTPUT_DIR}")
     try:

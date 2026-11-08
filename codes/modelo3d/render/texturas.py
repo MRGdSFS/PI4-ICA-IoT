@@ -21,7 +21,7 @@ TEX.mkdir(parents=True, exist_ok=True)
 
 FONTES = Path("C:/Windows/Fonts")
 
-# Paleta do contrato (seção 8)
+# Paleta (docs/v1/especificacao_tecnica.md, seção 8)
 AMARELO = "#F5C400"
 AMARELO_ESCURO = "#C99700"
 TINTA = "#1E1B16"

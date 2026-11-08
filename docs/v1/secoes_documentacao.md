@@ -55,7 +55,7 @@ para o substrato, por pesagem de amostras, fica para depois do plantio.
 
 A estação manda cada leitura por dois caminhos ao mesmo tempo:
 
-- pelo Wi-Fi, publicando num broker MQTT (`broker.hivemq.com:1883`, público, usado na fase de testes);
+- pelo Wi-Fi, publicando num broker MQTT (`broker.hivemq.com:8883`, com TLS; público, usado na fase de testes);
 - pelo cabo USB, imprimindo o mesmo JSON na serial (115200 baud), lido no notebook pelo coletor
   `codes/coleta/coletor_serial.py`, que grava os CSV mesmo sem rede.
 
@@ -79,7 +79,7 @@ Exemplo do formato de uma mensagem em `leituras` (a mesma linha sai na serial):
 sinal Wi-Fi recebido pela estação, usada para avaliar o enlace. Pela serial, a estação também aceita
 os comandos `l` (lê agora) e um número N (liga a bomba por N s; `0` desliga).
 
-Segurança do atuador: o firmware limita cada acionamento a 5 s (cerca de 100 mL na vazão nominal),
+Segurança do atuador: o firmware limita cada acionamento a 3 s (cerca de 50-75 mL na vazão nominal),
 qualquer que seja a origem do comando, para que um comando errado não esvazie o reservatório nem
 encharque o vaso. No boot, a bomba começa desligada.
 
@@ -97,10 +97,9 @@ recebe os dados de duas fontes, escolhidas na tela (detalhes em `docs/v1/dashboa
 Como o JSON é o mesmo nas duas fontes, a troca não muda a tela. Cada valor aparece com o estado (ideal,
 atenção ou alerta) e o motivo, segundo as faixas da seção 6.6. O painel mostra ainda a estação
 online/offline (tópico `status`, com last will), o RSSI, o estado da bomba com o botão de rega de 1 a
-5 s (publica em `bomba/cmd` ou envia pela serial), gráficos da sessão com as faixas coloridas e as
+3 s (publica em `bomba/cmd` ou envia pela serial), gráficos da sessão com as faixas coloridas e as
 regas marcadas, o histórico carregado dos CSV e o log das mensagens MQTT. A porta serial abre em um
-programa por vez: com o coletor gravando pela USB, o dashboard usa o MQTT. O ThingsBoard fica como
-opção para depois.
+programa por vez: com o coletor gravando pela USB, o dashboard usa o MQTT.
 
 Figura 3: `outputs/renders/dashboard_preview.png`, visão geral do painel, e
 `outputs/renders/dashboard_preview_mqtt.png`, log MQTT com o eco do comando. As duas capturas usam

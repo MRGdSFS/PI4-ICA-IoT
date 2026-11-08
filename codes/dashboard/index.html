@@ -21,7 +21,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js" onerror="__mqttReserva()"></script>
 <style>
 :root {
-  /* identidade (contrato, seção 8) */
+  /* identidade (docs/v1/especificacao_tecnica.md, seção 8) */
   --amarelo: #F5C400;
   --amarelo-esc: #C99700;
   --tinta: #1E1B16;
@@ -385,7 +385,7 @@ thead th { position: sticky; top: 0; background: #F6F0DE; font-weight: 600; colo
           <div class="kpi-sub" id="kBombaUlt">última rega: nenhuma nesta sessão</div>
         </div>
         <form class="irrigar" id="formIrrigar" autocomplete="off">
-          <label for="segundos">Irrigação manual · segundos (1 a 5)</label>
+          <label for="segundos">Irrigação manual · segundos (1 a 3)</label>
           <div class="irrigar-linha">
             <input id="segundos" type="number" min="1" max="5" step="1" value="1" inputmode="numeric" aria-describedby="irrigarVia">
             <button class="btn prim" id="btnIrrigar" type="submit">Irrigar 1 s</button>
@@ -394,7 +394,7 @@ thead th { position: sticky; top: 0; background: #F6F0DE; font-weight: 600; colo
           <p class="irrigar-via" id="irrigarVia">–</p>
         </form>
       </div>
-      <p class="nota" id="notaBomba">Liga a bomba de verdade. O firmware limita cada acionamento a 5 s.</p>
+      <p class="nota" id="notaBomba">Liga a bomba de verdade. O firmware limita cada acionamento a 3 s.</p>
     </article>
   </section>
 
@@ -465,7 +465,7 @@ thead th { position: sticky; top: 0; background: #F6F0DE; font-weight: 600; colo
   <section class="info">
     <article class="cartao">
       <h2>Faixas do tomateiro</h2>
-      <p class="log-sub">Valores iniciais configuráveis (contrato, seção 7). Ainda não há planta: calibrar depois do plantio. O sensor de solo é relativo (0 % no ar, 100 % na água).</p>
+      <p class="log-sub">Valores iniciais configuráveis (especificação técnica, seção 7). Ainda não há planta: calibrar depois do plantio. O sensor de solo é relativo (0 % no ar, 100 % na água).</p>
       <div class="tabela-rolagem">
         <table class="faixas-tab">
           <thead><tr><th>Variável</th><th>Ideal</th><th>Atenção</th><th>Alerta</th></tr></thead>
@@ -483,7 +483,7 @@ thead th { position: sticky; top: 0; background: #F6F0DE; font-weight: 600; colo
         <li><b>AUTO</b> usa o MQTT. Se o MQTT ficar 90 s sem leitura (ou cair) e a USB estiver aberta, mostra a USB.</li>
         <li><b>USB:</b> só um programa por vez abre a porta COM. Com o <code>coletor_serial.py</code> rodando (COM11), feche-o antes, ou fique no MQTT e no CSV.</li>
         <li><b>Histórico:</b> "Carregar CSV…" e escolha <code>outputs/coleta/leituras.csv</code> e <code>eventos.csv</code> juntos.</li>
-        <li><b>Broker público:</b> qualquer pessoa pode ler e publicar nestes tópicos. A trava de 5 s do firmware limita a bomba.</li>
+        <li><b>Broker público:</b> qualquer pessoa pode ler e publicar nestes tópicos. A trava de 3 s do firmware limita a bomba.</li>
       </ul>
     </article>
   </section>
@@ -511,16 +511,16 @@ function baseDaUrl() {
 
 const CFG = {
   base: baseDaUrl(),
-  // 8884 (wss) é o padrão do contrato; a 8000 (ws) é a reserva para redes que bloqueiam a 8884
+  // 8884 (wss) é o padrão; a 8000 (ws) é a reserva para redes que bloqueiam a 8884
   brokers: P.get('broker') ? [P.get('broker')] : ['wss://broker.hivemq.com:8884/mqtt', 'ws://broker.hivemq.com:8000/mqtt'],
   limiteAutoMs: 90 * 1000,
-  bombaMaxS: 5,
+  bombaMaxS: 3,
   maxPontos: 6000,
   maxLog: 200,
 };
 CFG.teste = CFG.base !== BASE_REAL;
 
-// Faixas do tomateiro (contrato, seção 7)
+// Faixas do tomateiro (especificação técnica, seção 7)
 const FAIXAS = {
   solo_pct:    { ideal: [50, 80], alerta: [40, 90], baixo: 'seco', alto: 'encharcado' },
   temp_c:      { ideal: [20, 30], alerta: [10, 35], baixo: 'frio demais', alto: 'calor excessivo' },
@@ -773,7 +773,7 @@ function piscar(ids) {
    Comando da bomba
    ====================================================================== */
 async function irrigar(segundos) {
-  if (!Number.isInteger(segundos) || segundos < 0 || segundos > CFG.bombaMaxS) { toast('Escolha de 1 a 5 segundos.', 'erro'); return; }
+  if (!Number.isInteger(segundos) || segundos < 0 || segundos > CFG.bombaMaxS) { toast('Escolha de 1 a 3 segundos.', 'erro'); return; }
   const canal = canalComando();
   if (!canal) { toast('Sem canal para o comando: conecte o MQTT ou a USB.', 'erro'); return; }
   const valor = String(segundos);
@@ -1074,7 +1074,7 @@ async function escreverSerial(texto) {
   try { await w.write(new TextEncoder().encode(texto)); } finally { w.releaseLock(); }
 }
 
-// Interpreta uma linha do Serial (firmware v1 gravado; aceita também o formato da seção 5 do contrato)
+// Interpreta uma linha do Serial (firmware v1 gravado; aceita também linhas com o campo "tipo")
 function processarLinhaSerial(bruta) {
   const t = String(bruta).replace(/\r/g, '').trim();
   if (!t) return;

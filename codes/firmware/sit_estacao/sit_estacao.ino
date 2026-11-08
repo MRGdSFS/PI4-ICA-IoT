@@ -4,7 +4,7 @@
 // Ligações:
 //   Sensor de solo  VCC -> 3V3 | GND -> GND | AOUT -> GPIO4
 //   AM2302          VCC -> 3V3 | GND -> GND | DATA -> GPIO5
-//   Transistor NPN (2N2222 ou BC337): base <- resistor 1 kΩ <- GPIO6 | emissor -> GND | coletor -> fio preto da bomba
+//   Transistor NPN MPSA42 (E-B-C): base <- resistor 1 kΩ <- GPIO6 | emissor -> GND | coletor -> fio preto da bomba
 //   Bomba 5 V (JT100): fio vermelho -> 5V | fio preto -> coletor
 //   Diodo 1N4007 em paralelo com a bomba: listra (catodo) no 5V, outro lado no coletor
 //
@@ -39,7 +39,7 @@
 
 // ---------- Tempos ----------
 const unsigned long INTERVALO_LEITURA_MS = 30UL * 1000;       // 30 s na coleta da v1; 10 min depois
-const unsigned long BOMBA_MAX_MS = 3UL * 1000;                // trava: 3 s já encharcaram o vaso de 10 cm; use 1 s por rega
+const unsigned long BOMBA_MAX_MS = 3UL * 1000;                // trava por acionamento: 3 s já encharcaram o vaso de 10 cm; use 1 s por rega
 const unsigned long RECONEXAO_MQTT_MS = 5000;
 
 // ---------- MQTT ----------

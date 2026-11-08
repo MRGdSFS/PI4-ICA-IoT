@@ -1,0 +1,27 @@
+{
+  "descricao": "regressão logística: probabilidade de a rega começar na próxima hora. z = intercepto + soma(peso * (x - media) / desvio)",
+  "entradas": [
+    "u_15cm",
+    "vpd_kpa",
+    "vpd_3h"
+  ],
+  "media": [
+    0.402424537037037,
+    1.3776300925925926,
+    1.4208885373799727
+  ],
+  "desvio": [
+    0.3112004140427884,
+    1.1579649097230846,
+    1.1452069862843948
+  ],
+  "peso": [
+    -4.0480182873546555,
+    3.384842743179541,
+    -2.246626100429047
+  ],
+  "intercepto": -4.081157954268624,
+  "ponto_de_corte": 0.7588316751697077,
+  "espera_apos_rega_min": 120,
+  "passo_min": 10
+}

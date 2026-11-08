@@ -6,7 +6,11 @@ import pandas as pd
 # ============================================================
 
 # Pasta-raiz onde você extraiu o dataset
+# Rodar da raiz do repositório. O zip em data/ extrai em data/<nome>/; se o extrator
+# criou uma pasta extra (data/<nome>/<nome>/), usa a interna.
 DATASET_DIR = Path("data/IoT Dataset from an Evolving Tomato Cultivation Te")
+if (DATASET_DIR / DATASET_DIR.name).is_dir():
+    DATASET_DIR = DATASET_DIR / DATASET_DIR.name
 
 # Pasta onde os resultados da análise serão salvos
 OUTPUT_DIR = Path("outputs/eda01")

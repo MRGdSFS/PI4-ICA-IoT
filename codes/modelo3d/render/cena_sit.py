@@ -2,7 +2,7 @@
 Renders da estação SIT montada (Blender 4.2 LTS, Cycles).
 
 Peças impressas lidas dos STL de outputs/modelo3d/ (não altera pecas.py nem os STL).
-Montagem (mm, origem no canto da caixa), conforme docs/v1/contrato_integracao.md seção 3:
+Montagem (mm, origem no canto da caixa), conforme docs/v1/especificacao_tecnica.md seção 3:
   caixa_base    como sai do STL: x 0..173,8  y 0..88,8  z 0..42
   caixa_tampa   virada 180° em torno de X: placa em z 42..44, aba para dentro da caixa
   reservatorio  y -88,4..0, encaixado pelos rabos de andorinha na face y=0
