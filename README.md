@@ -26,11 +26,11 @@ Marcos da disciplina: **M1** problema e dataset; **M2** exploração dos dados, 
 - Como a estação só terá sensor de solo e de ar (temperatura e umidade), a modelagem usa os anos de
   **2024 e 2025**, só da **linha 3**, a única irrigada por limiar de umidade do solo.
 - A análise que justifica essas escolhas (qual sensor é de 15 e de 30 cm, fases de irrigação, chuva não registrada,
-  escala para o sensor de 7 cm, clima de Parma contra Fortaleza) está em `notebooks/analise.ipynb`. Ela gera a tabela
-  `data/processed/linha3_10min.csv`, usada na modelagem.
-- Modelo (`notebooks/modelo.ipynb`, v2/M3): decide "regar agora" (liga a bomba). Alvo: uma rega começa na próxima hora.
-  Compara dois limiares e cinco modelos, treinando em um ano e testando no outro. Fica com uma regressão logística de três entradas
-  (índice de umidade `u`, VPD e VPD médio de 3 h), salva em `outputs/modelo/regar_logistica.json`.
+  escala para o sensor de 7 cm, clima de Parma contra Fortaleza) está em `notebooks/analise.ipynb`. Ela gera duas tabelas
+  usadas na modelagem: `data/processed/linha3_10min.csv` (solo, válvula e ar) e `data/processed/clima_10min.csv` (todas as variáveis do ar:
+  medidas na fazenda, ET₀ calculada com a fazenda e Open-Meteo).
+- Modelo: `notebooks/modelo.ipynb` é o modelo da equipe (regressão logística que decide "regar agora" e liga a bomba, alvo: uma rega começa na próxima hora).
+  `notebooks/modelo_completo.ipynb` compara as entradas possíveis (formas de normalizar a umidade do solo e 23 variáveis do ar, uma a uma), treinando em um ano e testando no outro, e mostra os resultados sem escolher um modelo final.
 
 ## Estrutura
 
